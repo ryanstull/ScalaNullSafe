@@ -16,8 +16,17 @@ object Main {
 
 		val a = null.asInstanceOf[A]
 
-		val q = ?(a.b.c.d)
+		val z = ?(a)
+		val y = ?(a.b)
+		val x = ?(a.b.c)
+		val w = ?(a.b.c.d)
 
-		println(q)
+		println(
+			s"""
+			  |$z
+			  |$y
+			  |$x
+			  |$w
+			""".stripMargin)
 	}
 }

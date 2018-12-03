@@ -13,19 +13,17 @@ object NullSafe {
 	def outer[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
 		val tree = expr.tree
 
-		val res = first(c)(tree)
+		val first = firstTerm(c)(tree)
+		val result = addNullCheck(c)(first,first)
 
-		val res2 = addNullCheck(c)(res,res)
-
-		c.Expr(res2)
+		c.Expr(result)
 	}
 
-	def first[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree): c.universe.Tree = {
+	def firstTerm[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree): c.universe.Tree = {
 		import c.universe._
 
 		tree match {
-			case select: Select => select
-			case ident: Ident => ident
+			case term @ (_:Select | _:Ident) => term
 			case _ => throw new IllegalArgumentException()
 		}
 	}
@@ -33,11 +31,14 @@ object NullSafe {
 	def addNullCheck[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree,result: c.universe.Tree): c.universe.Tree = {
 		import c.universe._
 
+		val nullWrap = (t: Tree) => q"if($t != null) $result else null"
+
 		tree match {
-			case Select(qual, _) =>
-				val t = q"if($qual != null) $result else null"
-				addNullCheck(c)(qual,t)
-			case i: Ident => q"if($i != null) $result else null"
+			case Select(qualifier, _) =>
+				val newResult = nullWrap(qualifier)
+				addNullCheck(c)(qualifier,newResult)
+			case i: Ident => nullWrap(i)
+			case _ => throw new IllegalArgumentException()
 		}
 	}
 }
