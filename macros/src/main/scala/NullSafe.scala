@@ -19,7 +19,7 @@ object NullSafe {
 		c.Expr(result)
 	}
 
-	def firstTerm[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree): c.universe.Tree = {
+	private def firstTerm[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree): c.universe.Tree = {
 		import c.universe._
 
 		tree match {
@@ -28,16 +28,18 @@ object NullSafe {
 		}
 	}
 
-	def addNullCheck[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree,result: c.universe.Tree): c.universe.Tree = {
+	private def addNullCheck[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree,result: c.universe.Tree): c.universe.Tree = {
 		import c.universe._
 
-		val nullWrap = (t: Tree) => q"if($t != null) $result else null"
+		def wrapInNullCheck(tree: c.universe.Tree): c.universe.Tree = {
+			q"if($tree != null) $result else null"
+		}
 
 		tree match {
 			case Select(qualifier, _) =>
-				val newResult = nullWrap(qualifier)
+				val newResult = wrapInNullCheck(qualifier)
 				addNullCheck(c)(qualifier,newResult)
-			case i: Ident => nullWrap(i)
+			case i: Ident => wrapInNullCheck(i)
 			case _ => throw new IllegalArgumentException()
 		}
 	}

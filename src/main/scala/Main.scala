@@ -6,15 +6,15 @@
   */
 object Main {
 
-	def main(args: Array[String]): Unit = {
+	case class C(d: String)
+	case class B(c: C)
+	case class A(b: B)
 
-		case class C(d: String)
-		case class B(c: C)
-		case class A(b: B)
+	def main(args: Array[String]): Unit = {
 
 		import NullSafe.?
 
-		val a = null.asInstanceOf[A]
+		val a = A(B(null))
 
 		val z = ?(a)
 		val y = ?(a.b)
