@@ -1,3 +1,5 @@
+
+
 /**
   * @author ryan
   * @since 11/27/18.
@@ -6,13 +8,16 @@ object Main {
 
 	def main(args: Array[String]): Unit = {
 
-		case class A(s: String)
-		case class B(a: A)
+		case class C(d: String)
+		case class B(c: C)
+		case class A(b: B)
 
 		import NullSafe.?
 
-		val b = null.asInstanceOf[B]
+		val a = null.asInstanceOf[A]
 
-		println(?(b.a))
+		val q = ?(a.b.c.d)
+
+		println(q)
 	}
 }
