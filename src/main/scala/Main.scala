@@ -11,10 +11,8 @@ object Main {
 
 		import NullSafe.?
 
-		val m = Map("a" -> 2)
+		val b = null.asInstanceOf[B]
 
-		val b = ?(m.get("a"))
-
-		println(?(b))
+		println(?(b.a))
 	}
 }

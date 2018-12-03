@@ -6,15 +6,27 @@
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
 
+
 object NullSafe {
 
-	def ?[A](a: A): A = macro nullSafeImpl[A]
+	def ?[A](expr: A): A = macro outer[A]
 
-	def nullSafeImpl[A: c.WeakTypeTag](c: blackbox.Context)(a: c.Expr[A]): c.Expr[A] = {
+	def outer[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
+		val res = inner(c)(expr.tree)
+		c.Expr(res)
+	}
+
+	private def inner[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree): c.universe.Tree = {
 		import c.universe._
 
-		println(show(a.tree))
-
-		a
+		tree match {
+			case s @ Select(qualifier,_) =>
+				If(q"$qualifier != null",
+					s,
+					Literal(Constant(null))
+				)
+			case _ => tree
+		}
 	}
+
 }
