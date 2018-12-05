@@ -1,3 +1,5 @@
+package com.ryanstull
+
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
 
@@ -5,13 +7,12 @@ import scala.reflect.macros.blackbox
   * @author ryan
   * @since 12/5/18.
   */
-object NullSafe {
+package object nullsafe {
 
 	def ?[A](expr: A): A = macro outer[A]
 
 	def outer[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
 		import c.universe._
-
 
 		val tree = expr.tree
 		println(showRaw(tree))
