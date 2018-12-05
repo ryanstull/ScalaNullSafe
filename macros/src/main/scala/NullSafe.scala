@@ -23,7 +23,7 @@ object NullSafe {
 		import c.universe._
 
 		tree match {
-			case term @ (_:Select | _:Ident) => term
+			case term @ (_:Select | _:Ident | _:Apply) => term
 			case _ => throw new IllegalArgumentException()
 		}
 	}
@@ -31,15 +31,18 @@ object NullSafe {
 	private def addNullCheck[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree,result: c.universe.Tree): c.universe.Tree = {
 		import c.universe._
 
-		def wrapInNullCheck(tree: c.universe.Tree): c.universe.Tree = {
+		def returnResultIfNotNull(tree: c.universe.Tree): c.universe.Tree = {
 			q"if($tree != null) $result else null"
 		}
 
 		tree match {
-			case Select(qualifier, _) =>
-				val newResult = wrapInNullCheck(qualifier)
+			case Apply(Select(qualifier, _), _) =>
+				val newResult = returnResultIfNotNull(qualifier)
 				addNullCheck(c)(qualifier,newResult)
-			case i: Ident => wrapInNullCheck(i)
+			case Select(qualifier, _) =>
+				val newResult = returnResultIfNotNull(qualifier)
+				addNullCheck(c)(qualifier,newResult)
+			case _: Ident => result
 			case _ => throw new IllegalArgumentException()
 		}
 	}
