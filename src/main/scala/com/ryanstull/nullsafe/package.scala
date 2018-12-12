@@ -11,6 +11,8 @@ package object nullsafe {
 
 	def ?[A](expr: A): A = macro outer[A]
 
+	def opt[A](expr: A): Option[A] = macro optImpl[A]
+
 	def outer[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
 		import c.universe._
 
@@ -22,6 +24,14 @@ package object nullsafe {
 		println(result)
 
 		c.Expr(result)
+	}
+
+	def optImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[Option[A]] = {
+		import c.universe._
+
+		val tree = expr.tree
+		val result = addNullCheck(c)(tree,tree)
+		c.Expr[Option[A]](q"Option($result)")
 	}
 
 	private def addNullCheck[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree,result: c.universe.Tree): c.universe.Tree = {
