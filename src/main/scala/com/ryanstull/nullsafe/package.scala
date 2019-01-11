@@ -10,14 +10,17 @@ import scala.reflect.macros.blackbox
   */
 package object nullsafe {
 
-	def ?[A](expr: A): A = macro outer[A]
-	def outer[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
-		import c.universe._
+//	def debugMaco[A](expr: A): A = macro debugMacoImpl[A]
+//	def debugMacoImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
+//		import c.universe._
+//		println(showRaw(expr.tree))
+//		expr
+//	}
 
+	def ?[A](expr: A): A = macro qMarkImpl[A]
+	def qMarkImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
 		val tree = expr.tree
-		//		println("Initial: " + showRaw(tree))
-		val result = rewriteToNullSafe(c)(tree, tree)
-		//		println(result)
+		val result = rewriteToNullSafe(c)(tree)
 		c.Expr(result)
 	}
 
@@ -26,11 +29,11 @@ package object nullsafe {
 		import c.universe._
 
 		val tree = expr.tree
-		val result = rewriteToNullSafe(c)(tree,tree)
+		val result = rewriteToNullSafe(c)(tree)
 		c.Expr[Option[A]](q"Option($result)")
 	}
 
-	private def rewriteToNullSafe[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree,accumulator: c.universe.Tree): c.universe.Tree = {
+	private def rewriteToNullSafe[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree): c.universe.Tree = {
 		import c.universe._
 		import mutable.{Queue => MQueue}
 
@@ -49,31 +52,15 @@ package object nullsafe {
 		}
 
 
-		//		def canBeNull(tree: Tree): Boolean = {
-		//			val sym = tree.symbol
-		//			val tpe = tree.tpe
-		//
-		//			sym != null &&
-		//				!sym.isModule && !sym.isModuleClass &&
-		//				!sym.isPackage && !sym.isPackageClass &&
-		//				!(tpe <:< typeOf[AnyVal])
-		//		}
+		def canBeNull(tree: Tree): Boolean = {
+			val sym = tree.symbol
+			val tpe = tree.tpe
 
-		//		def nullGuarded(originalPrefix: Tree, prefixTree: Tree, whenNonNull: Tree => Tree): Tree =
-		//			if (canBeNull(originalPrefix)) {
-		//				val prefixVal = c.freshName()
-		//				q"""
-		//				   |val $prefixVal = $prefixTree
-		//				   |if()
-		//				   |
-		//				 """
-		//					If(
-		//						Apply(Select(Ident(prefixVal), eqOp), List(nullTree)),
-		//						noneTree,
-		//						whenNonNull(Ident(prefixVal))
-		//					)
-		//				)
-		//			} else prefixTree
+			sym != null &&
+				!sym.isModule && !sym.isModuleClass &&
+				!sym.isPackage && !sym.isPackageClass &&
+				!(tpe <:< typeOf[AnyVal])
+		}
 
 		//		tree match {
 		////			case Apply(Select(qualifier, predicate), args) =>
@@ -88,20 +75,25 @@ package object nullsafe {
 
 		def buildIfGaurded(prefix: Tree,ident: Ident,selects: MQueue[Tree => Tree]): Tree = {
 			if(ident == null) {
-				val baseName = c.freshName
+				if(selects.size == 1) {
+					selects.dequeue().apply(prefix)
+				} else {
+					val baseName = c.freshName
 
-				val res = ValDef(Symbol.apply(baseName))
-
-				val part2 =
-					if(selects.nonEmpty){
-						q"""
-						   if($baseName != null) {
-							 ${buildIfGaurded(Ident(baseName),null,selects)}
-						   } else null
-						"""
-					} else EmptyTree
-
-				Block(res,part2)
+					Block(
+						ValDef(Modifiers(), TermName(baseName), TypeTree(), selects.dequeue().apply(prefix)),
+						reify {
+							if (c.Expr(Ident(TermName(baseName))).splice != null) {
+								c.Expr(buildIfGaurded(Ident(TermName(baseName)),null,selects)).splice
+							} else null
+						}.tree
+//						q"""
+//						   if($baseName != null) {
+//							 ${buildIfGaurded(Ident(TermName(baseName)),null,selects)}
+//						   } else null
+//						"""
+					)
+				}
 			} else {
 				reify {
 					if (c.Expr(ident).splice != null) {
@@ -112,8 +104,6 @@ package object nullsafe {
 		}
 
 		val (baseTerm, selections) = decomposeExp(tree)
-
-		println(selections)
 
 		buildIfGaurded(baseTerm,baseTerm,selections)
 	}

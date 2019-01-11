@@ -21,17 +21,16 @@ class Tests extends FlatSpec {
 	}
 
 	"Simple field access" should "not cause an NPE" in {
-
 		val a = A(null)
 
 		assert(?(a.b.c) == null)
 	}
 
-//	"Deeply nested field access" should "not cause an NPE" in {
-//		val a = A(B(C(null)))
-//
-//		assert(?(a.b.c.d.e.s) == null)
-//	}
+	"Deeply nested field access" should "not cause an NPE" in {
+		val a = A(B(C(null)))
+
+		assert(?(a.b.c.d.e.s) == null)
+	}
 
 //	"No-op method calls" should "not cause an NPE" in {
 //		val b = null.asInstanceOf[B]
