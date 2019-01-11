@@ -10,13 +10,6 @@ import scala.reflect.macros.blackbox
   */
 package object nullsafe {
 
-//	def debugMaco[A](expr: A): A = macro debugMacoImpl[A]
-//	def debugMacoImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
-//		import c.universe._
-//		println(showRaw(expr.tree))
-//		expr
-//	}
-
 	def ?[A](expr: A): A = macro qMarkImpl[A]
 	def qMarkImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
 		val tree = expr.tree
@@ -40,6 +33,10 @@ package object nullsafe {
 		def decomposeExp(tree: Tree): (Ident , MQueue[Tree => Tree]) = {
 			def loop(tree: Tree, accumulator: (Ident, MQueue[Tree => Tree]) = (null,MQueue.empty[Tree => Tree])): (Ident, MQueue[Tree => Tree]) = {
 				tree match {
+					case Apply(Select(qualifier, predicate), args) =>
+						val res = loop(qualifier, accumulator)
+						res._2 += ((qual: c.universe.Tree) => Apply(Select(qual, predicate), args))
+						res
 					case Select(qualifier, predName) =>
 						val res = loop(qualifier, accumulator)
 						res._2 += ((qual: c.universe.Tree) => Select(qual,predName))
@@ -62,17 +59,6 @@ package object nullsafe {
 				!(tpe <:< typeOf[AnyVal])
 		}
 
-		//		tree match {
-		////			case Apply(Select(qualifier, predicate), args) =>
-		////				val newResult = ifExpression(qualifier)
-		////				rewriteToNullSafe(c)(qualifier,newResult)
-		//			case Select(qualifier, predicate) =>
-		//				val newResult = ifExpression(qualifier,predicate)
-		//				rewriteToNullSafe(c)(qualifier,newResult)
-		//			case _: Ident => accumulator
-		//			case _ => accumulator
-		//		}
-
 		def buildIfGaurded(prefix: Tree,ident: Ident,selects: MQueue[Tree => Tree]): Tree = {
 			if(ident == null) {
 				if(selects.size == 1) {
@@ -87,11 +73,6 @@ package object nullsafe {
 								c.Expr(buildIfGaurded(Ident(TermName(baseName)),null,selects)).splice
 							} else null
 						}.tree
-//						q"""
-//						   if($baseName != null) {
-//							 ${buildIfGaurded(Ident(TermName(baseName)),null,selects)}
-//						   } else null
-//						"""
 					)
 				}
 			} else {
