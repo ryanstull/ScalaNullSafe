@@ -20,9 +20,16 @@ class Tests extends FlatSpec {
 		def getAB(string: String) = B(null)
 	}
 
-	"asdm" should "asd" in {
+	"A single element" should "not cause an NPE" in {
+		val a = null.asInstanceOf[A]
+
+		assert(?(a) eq a)
+	}
+
+	"A single element" should "return the right value" in {
 		val a = A(null)
-		println(opt(a.b.c.d.e.s).getOrElse("HELLO"))
+
+		assert(?(a) eq a)
 	}
 
 	"Simple field access" should "not cause an NPE" in {
@@ -31,10 +38,24 @@ class Tests extends FlatSpec {
 		assert(?(a.b.c) == null)
 	}
 
+	"Simple field access" should "return the right value" in {
+		val c = C(null)
+		val a = A(B(c))
+
+		assert(?(a.b.c) eq c)
+	}
+
 	"Deeply nested field access" should "not cause an NPE" in {
 		val a = A(B(C(null)))
 
 		assert(?(a.b.c.d.e.s) == null)
+	}
+
+	"Deeply nested field access" should "return the right value" in {
+		val string = "Hello"
+		val a = A(B(C(D(E(string)))))
+
+		assert(?(a.b.c.d.e.s) eq string)
 	}
 
 	"No-op method calls" should "not cause an NPE" in {
