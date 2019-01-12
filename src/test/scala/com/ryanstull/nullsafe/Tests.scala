@@ -20,6 +20,8 @@ class Tests extends FlatSpec {
 		def getAB(string: String) = B(null)
 	}
 
+	def getAnA: A = A(null)
+
 	"A single element" should "not cause an NPE" in {
 		val a = null.asInstanceOf[A]
 
@@ -32,13 +34,30 @@ class Tests extends FlatSpec {
 		assert(?(a) eq a)
 	}
 
-	"Simple field access" should "not cause an NPE" in {
-		val a = A(null)
+	"A single method call" should "not cause an NPE" in {
+		assert(?(getAnA) != null)
+	}
+
+	"One field access" should "not cause an NPE" in {
+		val a = null.asInstanceOf[A]
+
+		assert(?(a.b) == null)
+	}
+
+	"One field access" should "return the right value" in {
+		val b = B(null)
+		val a = A(b)
+
+		assert(?(a.b) eq b)
+	}
+
+	"Two field accesses" should "not cause an NPE" in {
+		val a = null.asInstanceOf[A]
 
 		assert(?(a.b.c) == null)
 	}
 
-	"Simple field access" should "return the right value" in {
+	"Two field accesses" should "return the right value" in {
 		val c = C(null)
 		val a = A(B(c))
 
@@ -46,7 +65,7 @@ class Tests extends FlatSpec {
 	}
 
 	"Deeply nested field access" should "not cause an NPE" in {
-		val a = A(B(C(null)))
+		val a = null.asInstanceOf[A]
 
 		assert(?(a.b.c.d.e.s) == null)
 	}
@@ -65,7 +84,7 @@ class Tests extends FlatSpec {
 	}
 
 	"Mixing field access and no-op method calls" should "not cause an NPE" in {
-		val a = A(null)
+		val a = null.asInstanceOf[A]
 
 		assert(?(a.b.getEmptyC.d.e) == null)
 	}
@@ -80,5 +99,13 @@ class Tests extends FlatSpec {
 		val a = null.asInstanceOf[A]
 
 		assert(?(a.getAB("").getEmptyC.d.e.s) == null)
+	}
+
+	"A simple method call" should "not cause an NPE" in {
+		assert(?(getAnA).isInstanceOf[A])
+	}
+
+	"Having a method call as the first element" should "not cause an NPE" in {
+		assert(?(getAnA.b) == null)
 	}
 }

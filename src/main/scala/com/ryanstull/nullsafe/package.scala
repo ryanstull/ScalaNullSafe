@@ -30,8 +30,8 @@ package object nullsafe {
 		import c.universe._
 		import mutable.{Queue => MQueue}
 
-		def decomposeExp(tree: Tree): (Ident , MQueue[Tree => Tree]) = {
-			def loop(tree: Tree, accumulator: (Ident, MQueue[Tree => Tree]) = (null,MQueue.empty[Tree => Tree])): (Ident, MQueue[Tree => Tree]) = {
+		def decomposeExp(tree: Tree): (Tree , MQueue[Tree => Tree]) = {
+			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty[Tree => Tree])): (Tree, MQueue[Tree => Tree]) = {
 				tree match {
 					case Apply(Select(qualifier, predicate), args) =>
 						val res = loop(qualifier, accumulator)
@@ -41,51 +41,58 @@ package object nullsafe {
 						val res = loop(qualifier, accumulator)
 						res._2 += ((qual: c.universe.Tree) => Select(qual,predName))
 						res
-					case i: Ident => (i, MQueue.empty[Tree => Tree])
+					case i @ (_:Ident | _:This) => (i, MQueue.empty[Tree => Tree])
 					case _ => throw new IllegalArgumentException
 				}
 			}
 			loop(tree)
 		}
 
+		def buildIfGuarded(prefix: Tree,selects: MQueue[Tree => Tree]): Tree = {
 
-		def canBeNull(tree: Tree): Boolean = {
-			val sym = tree.symbol
-			val tpe = tree.tpe
+			def nullGuarded(tree: Tree): Tree = reify {
+				if (c.Expr(tree).splice != null) {
+					c.Expr(loop(tree)).splice
+				} else null
+			}.tree
 
-			sym != null &&
-				!sym.isModule && !sym.isModuleClass &&
-				!sym.isPackage && !sym.isPackageClass &&
-				!(tpe <:< typeOf[AnyVal])
-		}
+//			def newVal(tree: Tree, a: Tree => Tree): Tree = {
+//				val baseTermName = TermName(c.freshName)
+//				val ident = Ident(baseTermName)
+//
+//				Block(
+//					ValDef(Modifiers(), baseTermName, TypeTree(), selects.dequeue().apply(prefix)),
+//					nullGuarded(ident)
+//				)
+//			}
 
-		def buildIfGaurded(prefix: Tree,ident: Ident,selects: MQueue[Tree => Tree]): Tree = {
-			if(ident == null) {
-				if(selects.size == 1) {
-					selects.dequeue().apply(prefix)
-				} else {
-					val baseName = c.freshName
+			def loop(prefix: Tree): Tree = {
+				if (selects.size != 1) {
+					val baseTermName = TermName(c.freshName)
+					val ident = Ident(baseTermName)
 
 					Block(
-						ValDef(Modifiers(), TermName(baseName), TypeTree(), selects.dequeue().apply(prefix)),
-						reify {
-							if (c.Expr(Ident(TermName(baseName))).splice != null) {
-								c.Expr(buildIfGaurded(Ident(TermName(baseName)),null,selects)).splice
-							} else null
-						}.tree
+						ValDef(Modifiers(), baseTermName, TypeTree(), selects.dequeue().apply(prefix)),
+						nullGuarded(ident)
 					)
+				} else {
+					selects.dequeue().apply(prefix)
 				}
-			} else {
-				reify {
-					if (c.Expr(ident).splice != null) {
-						c.Expr(buildIfGaurded(ident,null,selects)).splice
-					} else null
-				}
-			}.tree
+			}
+
+			if(selects.isEmpty) prefix
+			else if (prefix.symbol.isMethod) {
+				val baseTermName = TermName(c.freshName)
+				val ident = Ident(baseTermName)
+
+				Block(
+					ValDef(Modifiers(), baseTermName, TypeTree(), prefix),
+					nullGuarded(ident)
+				)
+			} else nullGuarded(prefix)
 		}
 
 		val (baseTerm, selections) = decomposeExp(tree)
-
-		buildIfGaurded(baseTerm,baseTerm,selections)
+		buildIfGuarded(baseTerm,selections)
 	}
 }
