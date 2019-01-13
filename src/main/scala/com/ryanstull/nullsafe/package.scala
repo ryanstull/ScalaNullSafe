@@ -33,15 +33,15 @@ package object nullsafe {
 		def decomposeExp(tree: Tree): (Tree , MQueue[Tree => Tree]) = {
 			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty[Tree => Tree])): (Tree, MQueue[Tree => Tree]) = {
 				tree match {
-					case Apply(Select(qualifier, predicate), args) =>
-						val res = loop(qualifier, accumulator)
-						res._2 += ((qual: c.universe.Tree) => Apply(Select(qual, predicate), args))
-						res
+					case t @ (_:Ident | _:This | Apply(Select(New(_), _), _)) => (t, MQueue.empty[Tree => Tree])
 					case Select(qualifier, predName) =>
 						val res = loop(qualifier, accumulator)
 						res._2 += ((qual: c.universe.Tree) => Select(qual,predName))
 						res
-					case i @ (_:Ident | _:This) => (i, MQueue.empty[Tree => Tree])
+					case Apply(Select(qualifier, predicate), args) =>
+						val res = loop(qualifier, accumulator)
+						res._2 += ((qual: c.universe.Tree) => Apply(Select(qual, predicate), args))
+						res
 					case _ => throw new IllegalArgumentException
 				}
 			}
@@ -74,10 +74,10 @@ package object nullsafe {
 				)
 			}
 
-			if(selects.isEmpty) prefix
-			else if (prefix.symbol.isMethod) {
+			if (prefix.symbol.isMethod) {
 				newVal(prefix,f => f)
-			} else ifStatement(prefix)
+			} else if(selects.isEmpty) prefix
+			else ifStatement(prefix)
 		}
 
 		val (baseTerm, selections) = decomposeExp(tree)

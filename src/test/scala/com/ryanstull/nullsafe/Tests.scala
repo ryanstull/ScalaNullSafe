@@ -108,4 +108,9 @@ class Tests extends FlatSpec {
 	"Having a method call as the first element" should "not cause an NPE" in {
 		assert(?(getAnA.b) == null)
 	}
+
+	"Constructors" should "not cause an NPE" in {
+		?(new A(null).b.c)
+	}
+
 }
