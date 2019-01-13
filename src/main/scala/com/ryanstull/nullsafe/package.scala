@@ -50,46 +50,34 @@ package object nullsafe {
 
 		def buildIfGuarded(prefix: Tree,selects: MQueue[Tree => Tree]): Tree = {
 
-			def nullGuarded(tree: Tree): Tree = reify {
+			def ifStatement(tree: Tree): Tree = reify {
 				if (c.Expr(tree).splice != null) {
-					c.Expr(loop(tree)).splice
+					c.Expr(checkForLastSelect(tree)).splice
 				} else null
 			}.tree
 
-//			def newVal(tree: Tree, a: Tree => Tree): Tree = {
-//				val baseTermName = TermName(c.freshName)
-//				val ident = Ident(baseTermName)
-//
-//				Block(
-//					ValDef(Modifiers(), baseTermName, TypeTree(), selects.dequeue().apply(prefix)),
-//					nullGuarded(ident)
-//				)
-//			}
-
-			def loop(prefix: Tree): Tree = {
-				if (selects.size != 1) {
-					val baseTermName = TermName(c.freshName)
-					val ident = Ident(baseTermName)
-
-					Block(
-						ValDef(Modifiers(), baseTermName, TypeTree(), selects.dequeue().apply(prefix)),
-						nullGuarded(ident)
-					)
+			def checkForLastSelect(tree: Tree): Tree = {
+				if (selects.size == 1) {
+					selects.dequeue().apply(tree)
 				} else {
-					selects.dequeue().apply(prefix)
+					newVal(tree, selects.dequeue())
 				}
 			}
 
-			if(selects.isEmpty) prefix
-			else if (prefix.symbol.isMethod) {
+			def newVal(tree: Tree, processRhs: Tree => Tree): Tree = {
 				val baseTermName = TermName(c.freshName)
 				val ident = Ident(baseTermName)
 
 				Block(
-					ValDef(Modifiers(), baseTermName, TypeTree(), prefix),
-					nullGuarded(ident)
+					ValDef(Modifiers(), baseTermName, TypeTree(), processRhs(tree)),
+					ifStatement(ident)
 				)
-			} else nullGuarded(prefix)
+			}
+
+			if(selects.isEmpty) prefix
+			else if (prefix.symbol.isMethod) {
+				newVal(prefix,f => f)
+			} else ifStatement(prefix)
 		}
 
 		val (baseTerm, selections) = decomposeExp(tree)
