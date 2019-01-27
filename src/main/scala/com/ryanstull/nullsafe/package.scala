@@ -28,19 +28,34 @@ package object nullsafe {
 
 	private def rewriteToNullSafe[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree): c.universe.Tree = {
 		import c.universe._
+
 		import mutable.{Queue => MQueue}
 
-		def decomposeExp(tree: Tree): (Tree , MQueue[(Tree => Tree,Tree)]) = {
-			def loop(tree: Tree, accumulator: (Tree, MQueue[(Tree => Tree, Tree)]) = (null,MQueue.empty)): (Tree, MQueue[(Tree => Tree, Tree)]) = {
-				tree match {				   //↓ This case captures constructor calls
-					case t @ (_:Ident | _:This | Apply(Select(New(_), _), _)) => (t, MQueue.empty)
-					case t @ Select(qualifier, predName) =>
+		def decomposeExp(tree: Tree): (Tree , MQueue[Tree => Tree]) = {
+
+			def isAnyRef(sub: Tree): Boolean = sub.tpe <:< typeOf[AnyRef]
+
+			def isPackageOrModule(sub: Tree): Boolean = {
+				val sym = sub.symbol
+
+				sym != null &&
+				sym.isModule || sym.isModuleClass ||
+				sym.isPackage || sym.isPackageClass
+			}
+
+			def nullable(tree: Tree): Boolean = isAnyRef(tree) && !isPackageOrModule(tree)
+
+			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty)): (Tree, MQueue[Tree => Tree]) = {
+				tree match {
+					case t if isPackageOrModule(t) => (t, MQueue.empty)
+					case t @ (_:Ident | _:This | Apply(Select(New(_), _), _) /**Constructors*/) => (t, MQueue.empty)
+					case Select(qualifier, predName) =>
 						val res = loop(qualifier, accumulator)
-						res._2 += ((qual: c.universe.Tree) => Select(qual,predName)) -> t
+						res._2 += ((qual: c.universe.Tree) => Select(qual,predName))
 						res
-					case t @ Apply(Select(qualifier, predicate), args) =>
+					case Apply(Select(qualifier, predicate), args) =>
 						val res = loop(qualifier, accumulator)
-						res._2 += ((qual: c.universe.Tree) => Apply(Select(qual, predicate), args)) -> t
+						res._2 += ((qual: c.universe.Tree) => Apply(Select(qual, predicate), args))
 						res
 					case _ => throw new IllegalArgumentException
 				}
@@ -48,32 +63,15 @@ package object nullsafe {
 			loop(tree)
 		}
 
-		def buildIfGuardedExp(prefix: Tree,selects: MQueue[(Tree => Tree, Tree)]): Tree = {
+		def buildIfGuardedExp(prefix: Tree,selects: MQueue[Tree => Tree]): Tree = {
 
-			def advanceToNextNullable(tree: Tree,first: Boolean): Tree = {
+			def needsCaching(tree: Tree): Boolean = {
+				val sym = tree.symbol
 
-				def canBeNull(sub: Tree): Boolean = {
-					val sym = sub.symbol
-					val tpe = sub.tpe
-
-					sym != null &&
-						!sym.isModule && !sym.isModuleClass &&
-						!sym.isPackage && !sym.isPackageClass &&
-						!(tpe <:< typeOf[AnyVal])
-				}
-
-				if(first) {
-					tree
-				} else {
-					var origTree: Tree = null
-					var newTree = tree
-					do {
-						val next = selects.dequeue()
-						origTree = next._2
-						newTree = next._1.apply(newTree)
-					} while (selects.nonEmpty && !canBeNull(origTree))
-					newTree
-				}
+				sym.isMethod || (tree match {
+					case _: Select => true
+					case _ => false
+				})
 			}
 
 			def newVal(prefix: Tree): Tree = {
@@ -81,29 +79,26 @@ package object nullsafe {
 				val ident = Ident(baseTermName)
 
 				Block(
-					ValDef(Modifiers(Flag.SYNTHETIC), baseTermName, TypeTree(prefix.tpe), prefix),
+					ValDef(Modifiers(Flag.SYNTHETIC), baseTermName, TypeTree(), prefix),
 					ifStatement(ident)
 				)
 			}
 
 			def ifStatement(prefix: Tree): Tree = reify {
 				if (c.Expr(prefix).splice != null) {
-					c.Expr(next(prefix,first = false)).splice
+					c.Expr(next(prefix)).splice
 				} else null
 			}.tree
 
-			def next(tree: Tree,first: Boolean): Tree = {
-				val newTree = advanceToNextNullable(tree,first)
-
-				if (selects.isEmpty) newTree
-				else if (first) {
-					ifStatement(newTree)
-				} else {
-					newVal(newTree)
-				}
+			def next(prefix: Tree): Tree = {
+				val nextTree = selects.dequeue().apply(prefix)
+				if(selects.isEmpty) nextTree
+				else newVal(nextTree)
 			}
 
-			next(prefix, first = true)
+			if(selects.isEmpty) prefix
+			else if (needsCaching(prefix)) newVal(prefix)
+			else ifStatement(prefix)
 		}
 
 		val (baseTerm, selections) = decomposeExp(tree)
