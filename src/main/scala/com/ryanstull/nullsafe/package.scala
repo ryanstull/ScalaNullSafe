@@ -31,23 +31,24 @@ package object nullsafe {
 
 		import mutable.{Queue => MQueue}
 
+		def isPackageOrModule(sub: Tree): Boolean = {
+			val sym = sub.symbol
+
+			sym != null &&
+				sym.isModule || sym.isModuleClass ||
+				sym.isPackage || sym.isPackageClass
+		}
+
 		def decomposeExp(tree: Tree): (Tree , MQueue[Tree => Tree]) = {
 
 			def isAnyRef(sub: Tree): Boolean = sub.tpe <:< typeOf[AnyRef]
-
-			def isPackageOrModule(sub: Tree): Boolean = {
-				val sym = sub.symbol
-
-				sym != null &&
-				sym.isModule || sym.isModuleClass ||
-				sym.isPackage || sym.isPackageClass
-			}
 
 			def nullable(tree: Tree): Boolean = isAnyRef(tree) && !isPackageOrModule(tree)
 
 			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty)): (Tree, MQueue[Tree => Tree]) = {
 				tree match {
-					case t if isPackageOrModule(t) => (t, MQueue.empty)
+					case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty)
+					case a if a.symbol.isStatic => (a, MQueue.empty)
 					case t @ (_:Ident | _:This | Apply(Select(New(_), _), _) /**Constructors*/) => (t, MQueue.empty)
 					case Select(qualifier, predName) =>
 						val res = loop(qualifier, accumulator)
@@ -69,7 +70,7 @@ package object nullsafe {
 				val sym = tree.symbol
 
 				sym.isMethod || (tree match {
-					case _: Select => true
+					case Select(qual, _) if !isPackageOrModule(qual) => true
 					case _ => false
 				})
 			}
