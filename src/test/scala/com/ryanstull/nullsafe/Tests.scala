@@ -158,5 +158,6 @@ class Tests extends FlatSpec {
 		?(a.b.d)
 	}
 
-	//Optimize option case
+	//Optimize option to return Some and None instead of Option.apply
+	//Aggregate field accesses that are not null
 }

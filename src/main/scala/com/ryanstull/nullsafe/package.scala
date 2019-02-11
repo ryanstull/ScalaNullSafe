@@ -57,7 +57,7 @@ package object nullsafe {
 
 			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty)): (Tree, MQueue[Tree => Tree]) = {
 				tree match {
-					case t @ (Literal(Constant(null)) | _:Ident | _:This | Apply(Select(New(_), _), _)) => (t, MQueue.empty)
+					case t @ (_: Literal | _:Ident | _:This | Apply(Select(New(_), _), _)) => (t, MQueue.empty)
 					case t if t.symbol.isStatic => (t, MQueue.empty)
 					case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty)
 					case Select(qualifier, predName) =>
