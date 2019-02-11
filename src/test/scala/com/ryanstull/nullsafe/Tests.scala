@@ -16,15 +16,15 @@ class Tests extends FlatSpec {
 	case class C(d: D)
 	case class B(c: C){
 		def getEmptyC: C = C(null)
+		def unit(): Unit = println("hello")
 	}
 	case class A(b: B){
 		def getB(string: String) = B(null)
 	}
 
 	def getAnA: A = A(null)
-	val anInt: Int = 3
 
-	"Null" should "work" in {
+	"Null" should "not cause NPE" in {
 		?(null)
 	}
 
@@ -107,10 +107,6 @@ class Tests extends FlatSpec {
 		assert(?(a.getB("").getEmptyC.d.e.s) == null)
 	}
 
-	"A simple method call" should "not cause an NPE" in {
-		assert(?(getAnA).isInstanceOf[A])
-	}
-
 	"Having a method call as the first element" should "not cause an NPE" in {
 		assert(?(getAnA.b) == null)
 	}
@@ -135,14 +131,32 @@ class Tests extends FlatSpec {
 		?(System.out.println(1))
 	}
 
-	"Getting an subclass of anyval" should "work" in {
+	"Getting an subclass of anyval" should "not cause NPE" in {
 		val a = A(B(C(D(null))))
 		?(a.b.c.d.getInt)
 	}
 
-	"Expression of type unit" should "work" in {
-		?(println("Hello"))
+	"Expression of type unit" should "not cause NPE" in {
+		val a: A = A(null)
+
+		?(a.b.unit())
 	}
 
-	//Test implicit conversions
+	"Methods defined in the local scope" should "not cause NPE" in {
+		val a = A(null)
+
+		def getCFromB(b: B): C = b.c
+
+		?(getCFromB(a.b).d)
+	}
+
+	"Implicit methods" should "not cause NPE" in {
+		val a = A(null)
+
+		implicit def getCFromB(b: B): C = b.c
+
+		?(a.b.d)
+	}
+
+	//Optimize option case
 }

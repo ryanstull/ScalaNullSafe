@@ -57,12 +57,16 @@ package object nullsafe {
 
 			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty)): (Tree, MQueue[Tree => Tree]) = {
 				tree match {
-					case t @ ( Literal(Constant(null)) | _:Ident | _:This | Apply(Select(New(_), _), _)) => (t, MQueue.empty)
+					case t @ (Literal(Constant(null)) | _:Ident | _:This | Apply(Select(New(_), _), _)) => (t, MQueue.empty)
 					case t if t.symbol.isStatic => (t, MQueue.empty)
 					case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty)
 					case Select(qualifier, predName) =>
 						val res = loop(qualifier, accumulator)
 						res._2 += ((qual: c.universe.Tree) => Select(qual,predName))
+						res
+					case Apply(fun: Ident, List(arg)) =>
+						val res = loop(arg, accumulator)
+						res._2 += ((qual: c.universe.Tree) => Apply(fun, List(qual)))
 						res
 					case Apply(Select(qualifier, predicate), args) =>
 						val res = loop(qualifier, accumulator)
