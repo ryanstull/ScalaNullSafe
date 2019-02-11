@@ -7,7 +7,6 @@ package com.ryanstull.nullsafe;
 public class HasStaticMethod {
 
 	public static String staticGetString() {
-		return "";
+		return "Hello";
 	}
-
 }

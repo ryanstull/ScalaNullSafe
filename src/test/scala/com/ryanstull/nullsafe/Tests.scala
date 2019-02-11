@@ -11,6 +11,7 @@ class Tests extends FlatSpec {
 	case class E(s: String)
 	case class D(e: E){
 		def getE: E = E(null)
+		def getInt: Int = 0
 	}
 	case class C(d: D)
 	case class B(c: C){
@@ -21,6 +22,7 @@ class Tests extends FlatSpec {
 	}
 
 	def getAnA: A = A(null)
+	val anInt: Int = 3
 
 	"A single element" should "not cause an NPE" in {
 		val a = null.asInstanceOf[A]
@@ -119,7 +121,15 @@ class Tests extends FlatSpec {
 		?(staticGetString())
 	}
 
+	"Static methods followed by other accesses" should "not cause an NPE" in {
+		import HasStaticMethod._
+
+		?(staticGetString().concat("test"))
+	}
+
 	"Long package names" should "not cause NPE" in {
 		?(System.out.println(1))
 	}
+
+	//Test implicit conversions
 }

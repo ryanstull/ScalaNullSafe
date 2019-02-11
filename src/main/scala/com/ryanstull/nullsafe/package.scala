@@ -47,8 +47,8 @@ package object nullsafe {
 
 			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty)): (Tree, MQueue[Tree => Tree]) = {
 				tree match {
+					case t if t.symbol.isStatic => (t, MQueue.empty)
 					case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty)
-					case a if a.symbol.isStatic => (a, MQueue.empty)
 					case t @ (_:Ident | _:This | Apply(Select(New(_), _), _) /**Constructors*/) => (t, MQueue.empty)
 					case Select(qualifier, predName) =>
 						val res = loop(qualifier, accumulator)
@@ -80,7 +80,7 @@ package object nullsafe {
 				val ident = Ident(baseTermName)
 
 				Block(
-					ValDef(Modifiers(Flag.SYNTHETIC), baseTermName, TypeTree(), prefix),
+					ValDef(Modifiers(Flag.SYNTHETIC), baseTermName, TypeTree(prefix.tpe), prefix),
 					ifStatement(ident)
 				)
 			}
