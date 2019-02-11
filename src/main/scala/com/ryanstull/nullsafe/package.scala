@@ -10,8 +10,18 @@ import scala.reflect.macros.blackbox
   */
 package object nullsafe {
 
-	def ?[A](expr: A): A = macro qMarkImpl[A]
-	def qMarkImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
+	def ?(expr: Byte): java.lang.Byte = macro qMarkImpl[java.lang.Byte]
+	def ?(expr: Short): java.lang.Short = macro qMarkImpl[java.lang.Short]
+	def ?(expr: Char): java.lang.Character = macro qMarkImpl[java.lang.Character]
+	def ?(expr: Int): java.lang.Integer = macro qMarkImpl[java.lang.Integer]
+	def ?(expr: Long): java.lang.Long = macro qMarkImpl[java.lang.Long]
+	def ?(expr: Float): java.lang.Float = macro qMarkImpl[java.lang.Float]
+	def ?(expr: Double): java.lang.Double = macro qMarkImpl[java.lang.Double]
+	def ?(expr: Boolean): java.lang.Boolean = macro qMarkImpl[java.lang.Boolean]
+
+	def ?(expr: Unit): Unit = macro qMarkImpl[Unit]
+	def ?[A <: AnyRef](expr: A): A = macro qMarkImpl[A]
+	def qMarkImpl[A : c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
 		val tree = expr.tree
 		val result = rewriteToNullSafe(c)(tree)
 		c.Expr(result)
@@ -47,6 +57,7 @@ package object nullsafe {
 
 			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty)): (Tree, MQueue[Tree => Tree]) = {
 				tree match {
+					case t @ Literal(Constant(null)) => (t, MQueue.empty)
 					case t if t.symbol.isStatic => (t, MQueue.empty)
 					case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty)
 					case t @ (_:Ident | _:This | Apply(Select(New(_), _), _) /**Constructors*/) => (t, MQueue.empty)

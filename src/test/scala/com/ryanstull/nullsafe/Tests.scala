@@ -24,6 +24,10 @@ class Tests extends FlatSpec {
 	def getAnA: A = A(null)
 	val anInt: Int = 3
 
+	"Null" should "work" in {
+		?(null)
+	}
+
 	"A single element" should "not cause an NPE" in {
 		val a = null.asInstanceOf[A]
 
@@ -129,6 +133,15 @@ class Tests extends FlatSpec {
 
 	"Long package names" should "not cause NPE" in {
 		?(System.out.println(1))
+	}
+
+	"Getting an subclass of anyval" should "work" in {
+		val a = A(B(C(D(null))))
+		?(a.b.c.d.getInt)
+	}
+
+	"Expression of type unit" should "work" in {
+		?(println("Hello"))
 	}
 
 	//Test implicit conversions
