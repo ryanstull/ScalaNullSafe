@@ -25,7 +25,7 @@ package object nullsafe {
 		import c.universe._
 
 		val tree = expr.tree
-		val result = rewriteToNullSafe(c)(tree)(Literal(Constant(null)),a => a)
+		val result = rewriteToNullSafe(c)(tree)(q"null",a => a)
 		c.Expr(result)
 	}
 
