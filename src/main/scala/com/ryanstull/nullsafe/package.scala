@@ -22,8 +22,10 @@ package object nullsafe {
 	def ?(expr: Unit): Unit = macro qMarkImpl[Unit]
 	def ?[A <: AnyRef](expr: A): A = macro qMarkImpl[A]
 	def qMarkImpl[A : c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
+		import c.universe._
+
 		val tree = expr.tree
-		val result = rewriteToNullSafe(c)(tree)
+		val result = rewriteToNullSafe(c)(tree)(Literal(Constant(null)),a => a)
 		c.Expr(result)
 	}
 
@@ -32,11 +34,12 @@ package object nullsafe {
 		import c.universe._
 
 		val tree = expr.tree
-		val result = rewriteToNullSafe(c)(tree)
-		c.Expr[Option[A]](q"Option($result)")
+		val result = rewriteToNullSafe(c)(tree)(q"None",a => q"Some($a)")
+		c.Expr[Option[A]](result)
 	}
 
-	private def rewriteToNullSafe[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree): c.universe.Tree = {
+	private def rewriteToNullSafe[A: c.WeakTypeTag]
+		(c: blackbox.Context)(tree: c.universe.Tree)(default: c.universe.Tree, finalTransform: c.universe.Tree => c.universe.Tree): c.universe.Tree = {
 		import c.universe._
 
 		import mutable.{Queue => MQueue}
@@ -102,16 +105,16 @@ package object nullsafe {
 			def ifStatement(prefix: Tree): Tree = reify {
 				if (c.Expr(prefix).splice != null) {
 					c.Expr(next(prefix)).splice
-				} else null
+				} else c.Expr(default).splice
 			}.tree
 
 			def next(prefix: Tree): Tree = {
 				val nextTree = selects.dequeue().apply(prefix)
-				if(selects.isEmpty) nextTree
+				if(selects.isEmpty) finalTransform(nextTree)
 				else newVal(nextTree)
 			}
 
-			if(selects.isEmpty) prefix
+			if(selects.isEmpty) finalTransform(prefix)
 			else if (needsCaching(prefix)) newVal(prefix)
 			else ifStatement(prefix)
 		}
