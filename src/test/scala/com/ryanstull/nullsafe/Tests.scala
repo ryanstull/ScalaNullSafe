@@ -2,25 +2,15 @@ package com.ryanstull.nullsafe
 
 import org.scalatest.FlatSpec
 
+import scala.language.implicitConversions
+
 /**
   * @author ryan
   * @since 12/5/18.
   */
 class Tests extends FlatSpec {
 
-	case class E(s: String)
-	case class D(e: E){
-		def getE: E = E(null)
-		def getInt: Int = 0
-	}
-	case class C(d: D)
-	case class B(c: C){
-		def getEmptyC: C = C(null)
-		def unit(): Unit = println("hello")
-	}
-	case class A(b: B){
-		def getB(string: String) = B(null)
-	}
+	import Tests._
 
 	def getAnA: A = A(null)
 
@@ -156,5 +146,22 @@ class Tests extends FlatSpec {
 		implicit def getCFromB(b: B): C = b.c
 
 		?(a.b.d)
+	}
+}
+
+//Example of deeply nested domain object
+object Tests {
+	case class E(s: String)
+	case class D(e: E){
+		def getE: E = E(null)
+		def getInt: Int = 0
+	}
+	case class C(d: D)
+	case class B(c: C){
+		def getEmptyC: C = C(null)
+		def unit(): Unit = println("hello")
+	}
+	case class A(b: B){
+		def getB(string: String) = B(null)
 	}
 }
