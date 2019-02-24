@@ -3,7 +3,6 @@ package com.ryanstull.nullsafe
 import java.util.concurrent.TimeUnit
 
 import org.openjdk.jmh.annotations._
-import org.openjdk.jmh.infra.Blackhole
 
 /**
   * @author ryan
@@ -22,6 +21,7 @@ class Benchmarks {
 
 	val a = A(B(C(D(E("test")))))
 	val aWithNull = A(B(null))
+	val nul = null //Refer to this null to prevent constant folding
 
 	@Benchmark
 	def fastButUnsafe: String = a.b.c.d.e.s
@@ -101,7 +101,7 @@ class Benchmarks {
 		} yield s
 
 	@Benchmark
-	def tryCatchSafeSuccessful(bh: Blackhole): String =
+	def tryCatchSafeSuccessful: String =
 		try {
 			a.b.c.d.e.s
 		} catch {
@@ -109,14 +109,11 @@ class Benchmarks {
 		}
 
 	@Benchmark
-	def tryCatchSafeFailure(bh: Blackhole): String =
+	def tryCatchSafeFailure: String =
 		try {
 			aWithNull.b.c.d.e.s
 		} catch {
-			case _: NullPointerException =>
-				bh.consume()
-				//Prevent constant-folding maybe? Otherwise the failure case is faster
-				null
+			case _: NullPointerException => nul
 		}
 
 	@Benchmark
