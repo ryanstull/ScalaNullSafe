@@ -17,6 +17,7 @@ lazy val root = (project in file("."))
 	)
 
 addCommandAlias("bench","benchmarks/jmh:run")
+addCommandAlias("quick-bench","benchmarks/jmh:run -wi 3 -i 2")
 
 lazy val benchmarks = (project in file("benchmarks"))
 	.settings(commonSettings: _*)
