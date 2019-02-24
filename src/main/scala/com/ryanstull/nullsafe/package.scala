@@ -60,9 +60,13 @@ package object nullsafe {
 
 			def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty)): (Tree, MQueue[Tree => Tree]) = {
 				tree match {
-					case t @ (_: Literal | _:Ident | _:This | Apply(Select(New(_), _), _)) => (t, MQueue.empty)
-					case t if t.symbol.isStatic => (t, MQueue.empty)
-					case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty)
+					case t @ (
+						_: Literal | _:Ident | _:This | //These shouldn't be further decomposed
+						Apply(Select(New(_), _), _)  |  //Neither should constructors
+						Select(_ :This, _) | Apply(Select(_ :This, _), _) | Apply(_ :This, _) //Shouldn't check 'this' for null
+						) => (t, MQueue.empty)
+					case t if t.symbol.isStatic => (t, MQueue.empty) //Static methods calls shouldn't be decomposed
+					case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty) //Nor Selects from packages
 					case Select(qualifier, predName) =>
 						val res = loop(qualifier, accumulator)
 						res._2 += ((qual: c.universe.Tree) => Select(qual,predName))
