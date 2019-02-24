@@ -1,16 +1,19 @@
 
-lazy val commonSettings = Seq(
-	version := "0.1",
-	organization := "com.ryanstull",
-	scalaVersion := "2.11.7"
-)
+lazy val scala212 = "2.12.8"
+lazy val scala211 = "2.11.12"
+lazy val supportedScalaVersions = List(scala212, scala211)
+
+
+ThisBuild / organization := "com.example"
+ThisBuild / version      := "0.1"
+ThisBuild / scalaVersion := scala212
 
 lazy val root = (project in file("."))
-	.settings(commonSettings: _*)
 	.settings(
 		name := "ScalaNullSafe",
+		crossScalaVersions := supportedScalaVersions,
 		libraryDependencies ++= Seq(
-			"org.scala-lang" % "scala-reflect" % "2.11.7",
+			"org.scala-lang" % "scala-reflect" % scalaVersion.value,
 			"org.scalactic" %% "scalactic" % "3.0.5" % "test",
 			"org.scalatest" %% "scalatest" % "3.0.5" % "test"
 		)
@@ -20,7 +23,6 @@ addCommandAlias("bench","benchmarks/jmh:run")
 addCommandAlias("quick-bench","benchmarks/jmh:run -wi 3 -i 2")
 
 lazy val benchmarks = (project in file("benchmarks"))
-	.settings(commonSettings: _*)
 	.settings(
 		name := "benchmarks",
 		sourceDirectory in Jmh := (sourceDirectory in Test).value,
