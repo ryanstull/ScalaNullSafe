@@ -40,7 +40,7 @@ val a2 = A(B(C(D(E("Hello")))))
 ?(a2.b.c.d.e.s) //Returns "Hello"
 ```
 
-There's also a variant that returns an `Option[A]` when provided and expression of type `A`,
+There's also a variant that returns an `Option[A]` when provided an expression of type `A`,
 and another that checks if a property is defined.
 
 ```
