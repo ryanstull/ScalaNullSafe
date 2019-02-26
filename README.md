@@ -4,7 +4,7 @@ The purpose of this macro is to provide a quick, easy, readable/writable, and ef
 
 ### Quick comparison:
 
-|                      	| Null-safe 	| Readable/Writable 	| Efficient 	|
+| Implementation      	| Null-safe 	| Readable/Writable 	| Efficient 	|
 |----------------------	|-----------	|-------------------	|-----------	|
 | ScalaNullSafe        	| ✔️         	| ✔️                 	| ✔️         	|
 | Normal access        	| ⛔         	| ✔️                 	| ✔️         	|
