@@ -147,6 +147,18 @@ class Tests extends FlatSpec {
 
 		?(a.b.d)
 	}
+
+	"Not null" should "work for non-null" in {
+		val a = A(B(C(D(E(null)))))
+
+		assert(notNull(a.b.c.d.e))
+	}
+
+	"Not null" should "work for null" in {
+		val a = A(B(null))
+
+		assert(!notNull(a.b.c.d.e))
+	}
 }
 
 //Example of deeply nested domain object

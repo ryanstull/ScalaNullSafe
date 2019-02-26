@@ -38,6 +38,15 @@ package object nullsafe {
 		c.Expr[Option[A]](result)
 	}
 
+	def notNull[A](expr: A): Boolean = macro notNullImpl[A]
+	def notNullImpl[A : c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[Boolean] = {
+		import c.universe._
+
+		val tree = expr.tree
+		val result = rewriteToNullSafe(c)(tree)(q"false", a => q"$a != null")
+		c.Expr[Boolean](result)
+	}
+
 	private def rewriteToNullSafe[A: c.WeakTypeTag]
 		(c: blackbox.Context)(tree: c.universe.Tree)(default: c.universe.Tree, finalTransform: c.universe.Tree => c.universe.Tree): c.universe.Tree = {
 		import c.universe._
