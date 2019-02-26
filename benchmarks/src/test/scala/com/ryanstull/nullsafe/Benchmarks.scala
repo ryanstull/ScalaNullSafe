@@ -27,7 +27,7 @@ class Benchmarks {
 	def fastButUnsafe: String = a.b.c.d.e.s
 
 	@Benchmark
-	def explicitSafeSuccess: String =
+	def explicitSafePresent: String =
 		if(a != null){
 			val b = a.b
 			if(b != null){
@@ -45,7 +45,7 @@ class Benchmarks {
 		} else null
 
 	@Benchmark
-	def explicitSafeFailure: String =
+	def explicitSafeAbsent: String =
 		if(aWithNull != null){
 			val b = aWithNull.b
 			if(b != null){
@@ -63,7 +63,7 @@ class Benchmarks {
 		} else null
 
 	@Benchmark
-	def optionSafeSuccess: Option[String] = Option(a).
+	def optionSafePresent: Option[String] = Option(a).
 		flatMap(a => Option(a.b)).
 		flatMap(b => Option(b.c)).
 		flatMap(c => Option(c.d)).
@@ -71,7 +71,7 @@ class Benchmarks {
 		flatMap(e => Option(e.s))
 
 	@Benchmark
-	def optionSafeFailure: Option[String] = Option(aWithNull).
+	def optionSafeAbsent: Option[String] = Option(aWithNull).
 		flatMap(a => Option(a.b)).
 		flatMap(b => Option(b.c)).
 		flatMap(c => Option(c.d)).
@@ -79,7 +79,7 @@ class Benchmarks {
 		flatMap(e => Option(e.s))
 
 	@Benchmark
-	def loopSafeSuccess: Option[String] =
+	def loopSafePresent: Option[String] =
 		for {
 			aOpt <- Option(a)
 			b <- Option(aOpt.b)
@@ -90,7 +90,7 @@ class Benchmarks {
 		} yield s
 
 	@Benchmark
-	def loopSafeFailure: Option[String] =
+	def loopSafeAbsent: Option[String] =
 		for {
 			aOpt <- Option(aWithNull)
 			b <- Option(aOpt.b)
@@ -101,7 +101,7 @@ class Benchmarks {
 		} yield s
 
 	@Benchmark
-	def tryCatchSafeSuccessful: String =
+	def tryCatchSafePresent: String =
 		try {
 			a.b.c.d.e.s
 		} catch {
@@ -109,7 +109,7 @@ class Benchmarks {
 		}
 
 	@Benchmark
-	def tryCatchSafeFailure: String =
+	def tryCatchSafeAbsent: String =
 		try {
 			aWithNull.b.c.d.e.s
 		} catch {
@@ -117,20 +117,20 @@ class Benchmarks {
 		}
 
 	@Benchmark
-	def nullSafeNavigatorSuccess: String = {
+	def nullSafeNavigatorPresent: String = {
 		import NullSafeNavigator._
 		a.?(_.b).?(_.c).?(_.d).?(_.e).?(_.s)
 	}
 
 	@Benchmark
-	def nullSafeNavigatorFailure: String = {
+	def nullSafeNavigatorAbsent: String = {
 		import NullSafeNavigator._
 		aWithNull.?(_.b).?(_.c).?(_.d).?(_.e).?(_.s)
 	}
 
 	@Benchmark
-	def ScalaNullSafeSuccess: String = ?(a.b.c.d.e.s)
+	def ScalaNullSafePresent: String = ?(a.b.c.d.e.s)
 
 	@Benchmark
-	def ScalaNullSafeFailure: String = ?(aWithNull.b.c.d.e.s)
+	def ScalaNullSafeAbsent: String = ?(aWithNull.b.c.d.e.s)
 }
