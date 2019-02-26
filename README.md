@@ -24,7 +24,7 @@ Add the dependency:
 
 Example use:
 
-```
+```scala
 import com.ryanstull.nullsafe._
 
 case class A(b: B)
@@ -43,7 +43,7 @@ val a2 = A(B(C(D(E("Hello")))))
 There's also a variant that returns an `Option[A]` when provided an expression of type `A`,
 and another that checks if a property is defined.
 
-```
+```scala
 opt(a.b.c.d.e.s) //Returns None
 notNull(a.b.c.d.e.s) //Returns false
 
@@ -56,7 +56,7 @@ notNull(a2.b.c.d.e.s) //Returns true
 The macro works by translating an expression, inserting null-checks before each intermediate result is used, turning
 `?(a.b.c)`, for example, into
 
-```
+```scala
 if(a != null){
   val b = a.b
   if(b != null){
@@ -67,7 +67,7 @@ if(a != null){
 
 Or for a longer example, translating `?(a.b.c.d.e.s)` into:
 
-```
+```scala
 if(a != null){
   val b = a.b
   if(b != null){
@@ -87,7 +87,7 @@ if(a != null){
 
 The `opt` macro is very similar, translating `opt(a.b.c)` into:
 
-```
+```scala
 if(a != null){
   val b = a.b
   if(b != null){
@@ -98,7 +98,7 @@ if(a != null){
 
 And the `notNull` macro, translating `notNull(a.b.c)` into:
 
-```
+```scala
 if(a != null){
   val b = a.b
   if(b != null){
