@@ -7,12 +7,14 @@ The purpose of this macro is to provide a quick, easy, readable/writable, and ef
 |                      	| Null-safe 	| Readable/Writable 	| Efficient 	|
 |----------------------	|-----------	|-------------------	|-----------	|
 | ScalaNullSafe        	| ✅         	| ✅                 	| ✅         	|
-| Normal access        	| ❌         	| ✅                 	| ✅         	|
-| Explicit null-checks 	| ✅         	| ❌                 	| ✅         	|
-| Option flatMap       	| ✅         	| ❌                 	| ❌         	|
-| For loop flatMap     	| ✅         	| ⚠️                 	| ❌         	|
+| Normal access        	| ⛔         	| ✅                 	| ✅         	|
+| Explicit null-checks 	| ✅         	| ⛔                 	| ✅         	|
+| Option flatMap       	| ✅         	| ⚠️                 	| ⛔         	|
+| For loop flatMap     	| ✅         	| ⚠️                 	| ⛔         	|
 | Null-safe navigator  	| ✅         	| ⚠️                 	| ⚠️         	|
 | Try-catch NPE        	| ✅         	| ✅                 	| ⚠️         	|
+
+Key: ✅ = Good, ⚠ = Problematic, ⛔ = Bad
 
 ## How to use
 
@@ -132,3 +134,9 @@ ones are where one of the intermediate values, was null; or in other words, wher
 These benchmarks compare all of the known ways (or at least the ways that I know of) to handle null-safety in scala.  It demonstrates 
 that the explicit null safety is the highest performing and that the 'ScalaNullSafe' macro has 
 equivalent performance.
+
+## Notes
+
+* Using the `?` macro on an expression whose type is `<: AnyVal`, will result in returning the corresponding java wrapper
+type.  For example `?(a.getInt)` will return `java.lang.Integer` instead of `Int` because the return type for this macro must
+be nullable.  The conversions are the default ones defined in `scala.Predef`
