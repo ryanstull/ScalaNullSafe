@@ -14,7 +14,7 @@ The purpose of this macro is to provide a quick, easy, readable/writable, and ef
 | Null-safe navigator  	| ✅         	| ⚠️                 	| ⚠️         	|
 | Try-catch NPE        	| ✅         	| ✅                 	| ⚠️         	|
 
-Key: ✅ = Good, ⚠ = Problematic, ⛔ = Bad
+Key: ✅ = Good, ⚠️ = Problematic, ⛔ = Bad
 
 ## How to use
 
