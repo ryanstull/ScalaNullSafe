@@ -2,6 +2,18 @@
 
 The purpose of this macro is to provide a quick, easy, readable/writable, and efficient way to make code null-safe in scala.
 
+### Quick comparison:
+
+|                      	| Null-safe 	| Readable/Writable 	| Efficient 	|
+|----------------------	|-----------	|-------------------	|-----------	|
+| ScalaNullSafe        	| ✅         	| ✅                 	| ✅         	|
+| Normal access        	| ❌         	| ✅                 	| ✅         	|
+| Explicit null-checks 	| ✅         	| ❌                 	| ✅         	|
+| Option flatMap       	| ✅         	| ❌                 	| ❌         	|
+| For loop flatMap     	| ✅         	| ⚠️                 	| ❌         	|
+| Null-safe navigator  	| ✅         	| ⚠️                 	| ⚠️         	|
+| Try-catch NPE        	| ✅         	| ✅                 	| ⚠️         	|
+
 ## How to use
 
 Add the dependency:
