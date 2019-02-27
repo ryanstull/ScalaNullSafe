@@ -10,7 +10,7 @@ stages:
 jobs:
   include:
     - env: TEST="test"
-      script: sbt test
+      script: sbt +test
     - stage: release
       script: sbt ci-release
 
