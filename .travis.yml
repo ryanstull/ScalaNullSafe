@@ -9,8 +9,8 @@ stages:
 
 jobs:
   include:
-    - env: TEST="compile"
-      script: sbt compile
+    - env: TEST="test"
+      script: sbt test
     - stage: release
       script: sbt ci-release
 
