@@ -3,10 +3,22 @@ lazy val scala212 = "2.12.8"
 lazy val scala211 = "2.11.12"
 lazy val supportedScalaVersions = List(scala212, scala211)
 
-
-ThisBuild / organization := "com.ryanstull"
-ThisBuild / version      := "1.0.0"
 ThisBuild / scalaVersion := scala212
+
+inThisBuild(List(
+	organization := "com.ryanstull",
+	homepage := Some(url("https://github.com/ryanstull/ScalaNullSafe")),
+	licenses := List("MIT" -> url("https://opensource.org/licenses/MIT")),
+	developers := List(
+		Developer(
+			"rstull123135",
+			"Ryan Stull",
+			"rstull1250@gmail.com",
+			url("http://ryanstull.com")
+		)
+	)
+))
+
 
 lazy val root = (project in file("."))
 	.settings(
@@ -29,5 +41,6 @@ lazy val benchmarks = (project in file("benchmarks"))
 		classDirectory in Jmh := (classDirectory in Test).value,
 		dependencyClasspath in Jmh := (dependencyClasspath in Test).value,
 		compile in Jmh := (compile in Jmh).dependsOn(compile in Test).value,
-		run in Jmh := (run in Jmh).dependsOn(Keys.compile in Jmh).evaluated
+		run in Jmh := (run in Jmh).dependsOn(Keys.compile in Jmh).evaluated,
+		skip in publish := true
 	).dependsOn(root % "test->test").enablePlugins(JmhPlugin)
