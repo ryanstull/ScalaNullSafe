@@ -148,6 +148,20 @@ class Tests extends FlatSpec {
 		?(a.b.d)
 	}
 
+	"opt" should "work for non-null" in {
+		val string = "Hello"
+
+		val a = A(B(C(D(E(string)))))
+
+		assert(opt(a.b.c.d.e.s).contains(string))
+	}
+
+	"opt" should "work for null" in {
+		val a = A(B(C(D(E(null)))))
+
+		assert(opt(a.b.c.d.e.s).isEmpty)
+	}
+
 	"Not null" should "work for non-null" in {
 		val a = A(B(C(D(E(null)))))
 

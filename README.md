@@ -91,7 +91,7 @@ The `opt` macro is very similar, translating `opt(a.b.c)` into:
 if(a != null){
   val b = a.b
   if(b != null){
-    Some(b.c)
+    Option(b.c)
   } else None
 } else None
 ```
