@@ -20,7 +20,7 @@ Key: ✔️ = Good, ⚠️ = Problematic, ⛔ = Bad
 
 Add the dependency:
 
-`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.0.0"`
+`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.0.1"`
 
 Example use:
 
@@ -106,6 +106,12 @@ if(a != null){
   } else false
 } else false
 ```
+
+All of the above work for method invocation as well as property access, and the two can be intermixed. For example: 
+
+`?(someObj.methodA().field1.twoArgMethod("test",1).otherField)`
+ 
+ will be translated properly.
 
 ## Performance
 
