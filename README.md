@@ -20,7 +20,7 @@ Key: ✔️ = Good, ⚠️ = Problematic, ⛔ = Bad
 
 Add the dependency:
 
-`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.0.1"`
+`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.0.2"`
 
 Example use:
 

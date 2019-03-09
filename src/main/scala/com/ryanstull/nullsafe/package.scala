@@ -12,19 +12,129 @@ package object nullsafe {
 
 	import MacroImplementations._
 
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Byte): java.lang.Byte = macro qMarkImpl[java.lang.Byte]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Short): java.lang.Short = macro qMarkImpl[java.lang.Short]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Char): java.lang.Character = macro qMarkImpl[java.lang.Character]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Int): java.lang.Integer = macro qMarkImpl[java.lang.Integer]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Long): java.lang.Long = macro qMarkImpl[java.lang.Long]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Float): java.lang.Float = macro qMarkImpl[java.lang.Float]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Double): java.lang.Double = macro qMarkImpl[java.lang.Double]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Boolean): java.lang.Boolean = macro qMarkImpl[java.lang.Boolean]
+
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?[A <: AnyRef](expr: A): A = macro qMarkImpl[A]
+
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns null instead.
+	  */
 	def ?(expr: Unit): Unit = macro qMarkUnitImpl[Unit]
 
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return The value of the expression wrapped in Some. If the expression is null, or if there would have been a
+	  *         NullPointerException due to method/field access on `null`, returns None instead.
+	  */
 	def opt[A](expr: A): Option[A] = macro optImpl[A]
 
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @tparam A Type of the expression
+	  * @return `true` if the value of the expression is not null and and there wouldn't have been any NullPointerExceptions
+	  *        due to method/field access on `null`, false otherwise.
+	  */
 	def notNull[A](expr: A): Boolean = macro notNullImpl[A]
 
 	//Putting the implementations in an object to avoid namespace pollution.
