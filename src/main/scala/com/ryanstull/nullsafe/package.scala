@@ -17,7 +17,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
@@ -27,7 +26,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
@@ -37,7 +35,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
@@ -47,7 +44,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
@@ -57,7 +53,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
@@ -67,7 +62,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
@@ -77,7 +71,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
@@ -87,7 +80,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
@@ -109,7 +101,6 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-	  * @tparam A Type of the expression
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
