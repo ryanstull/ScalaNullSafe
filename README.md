@@ -4,13 +4,14 @@ The purpose of this macro is to provide a quick, easy, readable/writable, and ef
 
 ### Quick comparison of null-safe implementations:
 
-| Implementation      	| Null-safe 	| Readable & Writable 	| Efficient 	|
+| Implementation      	| Null-safe 	| Readable & Writable | Efficient 	|
 |----------------------	|-----------	|-------------------	|-----------	|
 | ScalaNullSafe        	| ✔️         	| ✔️                 	| ✔️         	|
 | Normal access        	| ⛔         	| ✔️                 	| ✔️         	|
 | Explicit null-checks 	| ✔️         	| ⛔                 	| ✔️         	|
 | Option flatMap       	| ✔️         	| ⚠️                 	| ⛔         	|
 | For loop flatMap     	| ✔️         	| ⚠️                 	| ⛔         	|
+| Monocle Optional     	| ✔️         	| 💀	                  | ⛔         	|
 | Null-safe navigator  	| ✔️         	| ⚠️                 	| ⚠️         	|
 | Try-catch NPE        	| ✔️         	| ✔️                 	| ⚠️         	|
 
@@ -125,6 +126,8 @@ Here's the result of running the included jmh benchmarks:
 [info] Benchmarks.fastButUnsafe             thrpt   20  230.157 ± 0.572  ops/us
 [info] Benchmarks.loopSafeAbsent            thrpt   20  114.330 ± 0.113  ops/us
 [info] Benchmarks.loopSafePresent           thrpt   20   59.513 ± 0.097  ops/us
+[info] Benchmarks.monocleOptionalAbsent     thrpt   20   77.755 ± 0.800  ops/us
+[info] Benchmarks.monocleOptionalPresent    thrpt   20   36.446 ± 0.506  ops/us
 [info] Benchmarks.nullSafeNavigatorAbsent   thrpt   20  274.222 ± 0.441  ops/us
 [info] Benchmarks.nullSafeNavigatorPresent  thrpt   20  181.356 ± 1.538  ops/us
 [info] Benchmarks.optionSafeAbsent          thrpt   20  139.369 ± 0.272  ops/us

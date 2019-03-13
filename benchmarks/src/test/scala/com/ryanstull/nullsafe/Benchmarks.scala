@@ -133,4 +133,34 @@ class Benchmarks {
 
 	@Benchmark
 	def ScalaNullSafeAbsent: String = ?(aWithNull.b.c.d.e.s)
+
+
+	import monocle.Optional
+	val aGetB = Optional[A,B]{
+		case A(b) if b != null => Some(b)
+		case _ => None
+	}(b => { case A(_) => A(b) })
+	val bGetC = Optional[B,C]{
+		case B(c) if c != null => Some(c)
+		case _ => None
+	}(c => { case B(_) => B(c) })
+	val cGetD = Optional[C,D]{
+		case C(d) if d != null => Some(d)
+		case _ => None
+	}(d => { case C(_) => C(d) })
+	val dGetE = Optional[D,E]{
+		case D(e) if e != null => Some(e)
+		case _ => None
+	}(e => { case D(_) => D(e) })
+	val egetS = Optional[E,String]{
+		case E(s) if s != null => Some(s)
+		case _ => None
+	}(s => { case E(_) => E(s) })
+	val aGetS = aGetB composeOptional bGetC composeOptional cGetD composeOptional dGetE composeOptional egetS
+
+	@Benchmark
+	def monocleOptionalPresent: Option[String] = aGetS.getOption(a)
+
+	@Benchmark
+	def monocleOptionalAbsent: Option[String] = aGetS.getOption(aWithNull)
 }

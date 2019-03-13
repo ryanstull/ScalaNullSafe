@@ -27,20 +27,27 @@ lazy val root = (project in file("."))
 		libraryDependencies ++= Seq(
 			"org.scala-lang" % "scala-reflect" % scalaVersion.value,
 			"org.scalactic" %% "scalactic" % "3.0.5" % "test",
-			"org.scalatest" %% "scalatest" % "3.0.5" % "test"
+			"org.scalatest" %% "scalatest" % "3.0.5" % "test",
 		)
 	)
 
 addCommandAlias("bench","benchmarks/jmh:run")
 addCommandAlias("quick-bench","benchmarks/jmh:run -wi 3 -i 2")
 
+val monocleVersion = "1.5.0"
+
 lazy val benchmarks = (project in file("benchmarks"))
 	.settings(
 		name := "benchmarks",
+		crossScalaVersions := supportedScalaVersions,
 		sourceDirectory in Jmh := (sourceDirectory in Test).value,
 		classDirectory in Jmh := (classDirectory in Test).value,
 		dependencyClasspath in Jmh := (dependencyClasspath in Test).value,
 		compile in Jmh := (compile in Jmh).dependsOn(compile in Test).value,
 		run in Jmh := (run in Jmh).dependsOn(Keys.compile in Jmh).evaluated,
-		skip in publish := true
+		skip in publish := true,
+		libraryDependencies ++= Seq(
+			"com.github.julien-truffaut" %%  "monocle-core"  % monocleVersion % "test",
+			"com.github.julien-truffaut" %%  "monocle-macro" % monocleVersion % "test",
+		)
 	).dependsOn(root % "test->test").enablePlugins(JmhPlugin)
