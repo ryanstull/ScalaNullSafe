@@ -11,7 +11,7 @@ The purpose of this macro is to provide a quick, easy, readable/writable, and ef
 | Explicit null-checks 	| ✔️         	| ⛔                 	| ✔️         	|
 | Option flatMap       	| ✔️         	| ⚠️                 	| ⛔         	|
 | For loop flatMap     	| ✔️         	| ⚠️                 	| ⛔         	|
-| Monocle Optional     	| ✔️         	| 💀	                  | ⛔         	|
+| Monocle Optional (lenses)| ✔️         	| 💀	                  | ⛔         	|
 | Null-safe navigator  	| ✔️         	| ⚠️                 	| ⚠️         	|
 | Try-catch NPE        	| ✔️         	| ✔️                 	| ⚠️         	|
 
@@ -21,7 +21,7 @@ Key: ✔️ = Good, ⚠️ = Problematic, ⛔ = Bad
 
 Add the dependency:
 
-`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.0.2"`
+`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.0.3"`
 
 Example use:
 
