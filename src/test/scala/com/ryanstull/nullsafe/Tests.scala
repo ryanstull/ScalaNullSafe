@@ -173,11 +173,69 @@ class Tests extends FlatSpec {
 
 		assert(!notNull(a.b.c.d.e))
 	}
+
+	"Using custom default" should "work for absent case" in {
+		val a = A(B(null))
+
+		assert(?(a.b.c.d.e.s,"") == "")
+	}
+
+	"Using custom default" should "work for present case" in {
+		val a = A(B(C(D(E("Hello")))))
+
+		assert(?(a.b.c.d.e.s,"") == "Hello")
+	}
+
+	"Using custom default" should "work for absent case with Int" in {
+		val a = A(B(null))
+
+		assert(?(a.b.c.d.getInt,new Integer(3)) == 3)
+	}
+
+	"Using custom default" should "work for present case with Int" in {
+		val a = A(B(C(D(E("Hello")))))
+
+		assert(?(a.b.c.d.getInt,new Integer(3)) == 0)
+	}
+
+	"Using custom default" should "work for absent case with Boolean" in {
+		val a = A(B(null))
+
+		assert(?(a.b.c.d.e.getBool,true) == true)
+	}
+
+	"Using custom default" should "work for present case with Boolean" in {
+		val a = A(B(C(D(E("Hello")))))
+
+		assert(?(a.b.c.d.e.getBool,true) == false)
+	}
+
+	"Using custom default" should "work for absent case with Double" in {
+		val a = A(B(null))
+
+		assert(?(a.b.c.d.e.getDouble,3.0) == 3.0)
+	}
+
+	"Using custom default" should "work for present case with Double" in {
+		val a = A(B(C(D(E("Hello")))))
+
+		assert(?(a.b.c.d.e.getDouble,3.0) == 0.0)
+	}
+
+	"Using custom default" should "work for absent case with Unit" in {
+		val a = A(B(null))
+
+		?(a.b.c.d.e.s.notify(),println("Absent"))
+	}
+
 }
 
 //Example of deeply nested domain object
 object Tests {
-	case class E(s: String)
+	case class E(s: String){
+		def getBool: Boolean = false
+		def getDouble: Double = 0.0
+	}
 	case class D(e: E){
 		def getE: E = E(null)
 		def getInt: Int = 0

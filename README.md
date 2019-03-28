@@ -21,7 +21,7 @@ Key: ✔️ = Good, ⚠️ = Problematic, ⛔ = Bad
 
 Add the dependency:
 
-`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.0.3"`
+`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.1.0"`
 
 Example use:
 
@@ -113,6 +113,17 @@ All of the above work for method invocation as well as property access, and the 
 `?(someObj.methodA().field1.twoArgMethod("test",1).otherField)`
  
  will be translated properly.
+ 
+For the `?` macro, you can also provide a custom default instead of null, by passing it in as the second
+parameter.  For example
+
+```
+case class Person(name: String)
+
+val person: Person = null
+
+assert(?(person.name,"") == "")
+```
 
 ## Performance
 
@@ -149,3 +160,6 @@ equivalent performance.
 * Using the `?` macro on an expression whose type is `<: AnyVal`, will result in returning the corresponding java wrapper
 type.  For example `?(a.getInt)` will return `java.lang.Integer` instead of `Int` because the return type for this macro must
 be nullable.  The conversions are the default ones defined in `scala.Predef`
+
+* If you're having trouble with resolving the correct method when using the `?` macro with a default arg, try explicitly
+specifying the type of the default

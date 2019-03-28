@@ -26,10 +26,32 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Byte, default: java.lang.Byte): java.lang.Byte = macro qMarkImplDefault[java.lang.Byte]
+
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
 	def ?(expr: Short): java.lang.Short = macro qMarkImpl[java.lang.Short]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Short, default: java.lang.Short): java.lang.Short = macro qMarkImplDefault[java.lang.Short]
+
 	/**
 	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
 	  *	and adds explicit null-checks to avoid that.
@@ -44,10 +66,32 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Char, default: java.lang.Character): java.lang.Character = macro qMarkImplDefault[java.lang.Character]
+
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
 	def ?(expr: Int): java.lang.Integer = macro qMarkImpl[java.lang.Integer]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Int, default: java.lang.Integer): java.lang.Integer = macro qMarkImplDefault[java.lang.Integer]
+
 	/**
 	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
 	  *	and adds explicit null-checks to avoid that.
@@ -62,10 +106,31 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Long, default: java.lang.Long): java.lang.Long = macro qMarkImplDefault[java.lang.Long]
+
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
 	def ?(expr: Float): java.lang.Float = macro qMarkImpl[java.lang.Float]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Float, default: java.lang.Float): java.lang.Float = macro qMarkImplDefault[java.lang.Float]
 	/**
 	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
 	  *	and adds explicit null-checks to avoid that.
@@ -80,11 +145,31 @@ package object nullsafe {
 	  *	and adds explicit null-checks to avoid that.
 	  *
 	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Double, default: java.lang.Double): java.lang.Double = macro qMarkImplDefault[java.lang.Double]
+
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
 	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
 	  *         access on `null`, returns null instead.
 	  */
 	def ?(expr: Boolean): java.lang.Boolean = macro qMarkImpl[java.lang.Boolean]
-
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Boolean, default: java.lang.Boolean): java.lang.Boolean = macro qMarkImplDefault[java.lang.Boolean]
 	/**
 	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
 	  *	and adds explicit null-checks to avoid that.
@@ -95,6 +180,16 @@ package object nullsafe {
 	  *         access on `null`, returns null instead.
 	  */
 	def ?[A <: AnyRef](expr: A): A = macro qMarkImpl[A]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?[A <: AnyRef](expr: A, default: A): A = macro qMarkImplDefault[A]
 
 	/**
 	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
@@ -105,6 +200,16 @@ package object nullsafe {
 	  *         access on `null`, returns null instead.
 	  */
 	def ?(expr: Unit): Unit = macro qMarkUnitImpl[Unit]
+	/**
+	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
+	  *	and adds explicit null-checks to avoid that.
+	  *
+	  * @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+	  * @param default Custom default value to return in the case where NPE would have occurred.
+	  * @return The value of the expression. If there would have been a NullPointerException due to method/field
+	  *         access on `null`, returns `default` instead.
+	  */
+	def ?(expr: Unit, default: Unit): Unit = macro qMarkImplDefault[Unit]
 
 	/**
 	  *	Translates an expression that could cause a NullPointerException due to method/field access on `null`
@@ -130,11 +235,18 @@ package object nullsafe {
 
 	//Putting the implementations in an object to avoid namespace pollution.
 	private[this] object MacroImplementations {
+
 		def qMarkImpl[A : c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
 			import c.universe._
 
 			val tree = expr.tree
 			val result = rewriteToNullSafe(c)(tree)(q"null",a => a)
+			c.Expr(result)
+		}
+
+		def qMarkImplDefault[A : c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A], default: c.Expr[A]): c.Expr[A] = {
+			val tree = expr.tree
+			val result = rewriteToNullSafe(c)(tree)(default.tree,a => a)
 			c.Expr(result)
 		}
 
