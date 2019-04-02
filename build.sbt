@@ -51,3 +51,5 @@ lazy val benchmarks = (project in file("benchmarks"))
 			"com.github.julien-truffaut" %%  "monocle-macro" % monocleVersion % "test",
 		)
 	).dependsOn(root % "test->test").enablePlugins(JmhPlugin)
+
+updateOptions := updateOptions.value.withGigahorse(false)

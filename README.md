@@ -21,7 +21,7 @@ Key: ✔️ = Good, ⚠️ = Problematic, ⛔ = Bad
 
 Add the dependency:
 
-`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.1.0"`
+`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.0"`
 
 Example use:
 
@@ -42,7 +42,7 @@ val a2 = A(B(C(D(E("Hello")))))
 ```
 
 There's also a variant that returns an `Option[A]` when provided an expression of type `A`,
-and another that checks if a property is defined.
+and another that just checks if a property is defined.
 
 ```scala
 opt(a.b.c.d.e.s) //Returns None
@@ -114,15 +114,41 @@ All of the above work for method invocation as well as property access, and the 
  
  will be translated properly.
  
-For the `?` macro, you can also provide a custom default instead of null, by passing it in as the second
+For the `?` macro, you can also provide a custom default instead of `null`, by passing it in as the second
 parameter.  For example
 
-```
+```scala
 case class Person(name: String)
 
 val person: Person = null
 
 assert(?(person.name,"") == "")
+```
+
+There's also a `??` macro which can be used if you want to return a default value if the property itself is `null` and
+not just one leading up to it.
+
+```scala
+case class Person(name: String)
+
+val person = Person(null)
+
+assert(??(person.name,"Bob") == "Bob")
+```
+
+With the `?` macro, the above would just return `null`. To be more explicit, the `??` macro would translate 
+`??(a.b.c,default)` into
+
+```scala
+if(a != null){
+  val b = a.b
+  if(b != null){
+    val c = b.c
+    if(c != null){
+      c
+    } else default
+  } else default
+} else default
 ```
 
 ## Performance
@@ -149,10 +175,10 @@ Here's the result of running the included jmh benchmarks:
 ```
 
 All of the `Present` benchmarks are where the value was actually defined and the `Absent`
-ones are where one of the intermediate values, was null; or in other words, where an NPE would have occurred.
+ones are where one of the intermediate values, was `null`; or in other words, where an NPE would have occurred.
 
 These benchmarks compare all of the known ways (or at least the ways that I know of) to handle null-safety in scala.  It demonstrates 
-that the explicit null safety is the highest performing and that the 'ScalaNullSafe' macro has 
+that the explicit null-safety is the highest performing and that the 'ScalaNullSafe' macro has 
 equivalent performance.
 
 ## Notes

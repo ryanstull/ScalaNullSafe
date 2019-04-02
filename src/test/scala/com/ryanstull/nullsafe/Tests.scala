@@ -162,6 +162,10 @@ class Tests extends FlatSpec {
 		assert(opt(a.b.c.d.e.s).isEmpty)
 	}
 
+	"opt(null)" should "equal None" in {
+		assert(opt(null) == None)
+	}
+
 	"Not null" should "work for non-null" in {
 		val a = A(B(C(D(E(null)))))
 
@@ -228,6 +232,23 @@ class Tests extends FlatSpec {
 		?(a.b.c.d.e.s.notify(),println("Absent"))
 	}
 
+	"??" should "return default NPE would have occurred" in {
+		val a = A(B(null))
+
+		assert(??(a.b.c.d.e.s,"Hello") == "Hello")
+	}
+
+	"??" should "return default when desired field is null" in {
+		val a = A(B(C(D(E(null)))))
+
+		assert(??(a.b.c.d.e.s,"Hello") == "Hello")
+	}
+
+	"??" should "return actual field when it is present" in {
+		val a = A(B(C(D(E("There")))))
+
+		assert(??(a.b.c.d.e.s,"Hello") == "There")
+	}
 }
 
 //Example of deeply nested domain object
