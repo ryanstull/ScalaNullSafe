@@ -125,7 +125,7 @@ val person: Person = null
 assert(?(person.name,"") == "")
 ```
 
-There's also a `??` macro which can be used if you want to return a default value if the property itself is `null` and
+There's also a `??` ([null coalese operator](https://en.wikipedia.org/wiki/Null_coalescing_operator)) macro which can be used if you want to return a default value if the property itself is `null` and
 not just one leading up to it.
 
 ```scala
