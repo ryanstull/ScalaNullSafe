@@ -1,9 +1,10 @@
 
+lazy val scala213 = "2.13.0"
 lazy val scala212 = "2.12.8"
 lazy val scala211 = "2.11.12"
-lazy val supportedScalaVersions = List(scala212, scala211)
+lazy val supportedScalaVersions = List(scala211, scala212, scala213)
 
-ThisBuild / scalaVersion := scala212
+ThisBuild / scalaVersion := scala213
 
 inThisBuild(List(
 	organization := "com.ryanstull",
@@ -19,22 +20,21 @@ inThisBuild(List(
 	)
 ))
 
-
 lazy val root = (project in file("."))
 	.settings(
 		name := "ScalaNullSafe",
 		crossScalaVersions := supportedScalaVersions,
 		libraryDependencies ++= Seq(
 			"org.scala-lang" % "scala-reflect" % scalaVersion.value,
-			"org.scalactic" %% "scalactic" % "3.0.5" % "test",
-			"org.scalatest" %% "scalatest" % "3.0.5" % "test",
+			"org.scalactic" %% "scalactic" % "3.0.8" % "test",
+			"org.scalatest" %% "scalatest" % "3.0.8" % "test",
 		)
 	)
 
 addCommandAlias("bench","benchmarks/jmh:run")
 addCommandAlias("quick-bench","benchmarks/jmh:run -wi 3 -i 2")
 
-val monocleVersion = "1.5.0"
+val monocleVersion = "1.6.0-RC1"
 
 lazy val benchmarks = (project in file("benchmarks"))
 	.settings(
