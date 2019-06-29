@@ -214,16 +214,17 @@ package object nullsafe {
 	def ?(expr: Unit, default: Unit): Unit = macro qMarkImplDefault[Unit]
 
 	/**
-		* Translates an expression that could cause a NullPointerException due to method/field access on `null`
-		* and adds explicit null-checks to avoid that.
+		* A <a href="https://en.wikipedia.org/wiki/Null_coalescing_operator">null-coalesce operator</a>. You can provide a
+	  	* variable number of expressions in the first param-list and a default value in the second list. It will return the
+	  	* first non-null value going from left to right.  What's special about this though, is that all of the expressions
+	  	* are translated to be null safe.  So you can just provide `a.b.c` as an expression, without worrying if `a` or `b` is null.
 		*
-		* @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
-		* @param default Default value to return if the desired expression is null or would have caused an NPE.
+		* @param exprs A variable length number of expressions that might be null
+		* @param default Default value to return if all the expressions are null or would have thrown and NPE.
 		* @tparam A Type of the expression
-		* @return The value of the expression. If the value of the expression or any of the values leading up to that one are
-		*         null, returns `default` instead.
+		* @return The first non-null value going from left to right.
 		*/
-	def ??[A <: AnyRef](expr: A, default: A): A = macro doubleQMarkImpl[A]
+	def ??[A <: AnyRef](exprs: A*)(default: A): A = macro doubleQMarkImpl[A]
 
 	/**
 		*	Translates an expression that could cause a NullPointerException due to method/field access on `null`
@@ -272,10 +273,27 @@ package object nullsafe {
 			c.Expr(result)
 		}
 
-		def doubleQMarkImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A], default: c.Expr[A]): c.Expr[A] = {
-			val tree = expr.tree
-			val result = rewriteToNullSafe(c)(tree)(default.tree, checkLast = true, a => a)
-			c.Expr(result)
+		def doubleQMarkImpl[A: c.WeakTypeTag](c: blackbox.Context)(exprs: c.Expr[A]*)(default: c.Expr[A]): c.Expr[A] = {
+			import c.universe._
+
+			val safeTrees = exprs.map(expr => rewriteToNullSafe(c)(expr.tree)(q"null", checkLast = true, a => a))
+
+			val identsWithVals = safeTrees.map { safeTree =>
+				val freshNameTerm = TermName(c.freshName)
+				(Ident(freshNameTerm), ValDef(Modifiers(Flag.SYNTHETIC), freshNameTerm, TypeTree(safeTree.tpe), safeTree))
+			}
+
+			def genIfBlock(idents: Seq[Ident]): Tree = {
+				val headExpr = c.Expr(idents.head)
+				reify {
+					if (headExpr.splice != null) headExpr.splice
+					else c.Expr(if(idents.size > 1) genIfBlock(idents.tail) else default.tree).splice
+				}.tree
+			}
+
+			c.Expr(Block(
+				identsWithVals.map(_._2) :+ genIfBlock(identsWithVals.map(_._1)): _*
+			))
 		}
 
 		def optImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[Option[A]] = {

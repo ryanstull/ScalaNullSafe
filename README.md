@@ -21,7 +21,7 @@ Key: ✔️ = Good, ⚠️ = Problematic, ⛔ = Bad
 
 Add the dependency:
 
-`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.0"`
+`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.2"`
 
 Example use:
 
@@ -125,31 +125,50 @@ val person: Person = null
 assert(?(person.name,"") == "")
 ```
 
-There's also a `??` ([null coalese operator](https://en.wikipedia.org/wiki/Null_coalescing_operator)) macro which can be used if you want to return a default value if the property itself is `null` and
-not just one leading up to it.
+There's also a `??` ([null coalesce operator](https://en.wikipedia.org/wiki/Null_coalescing_operator)) which is used to select the first non-null value from a var-args list of expressions.
 
 ```scala
 case class Person(name: String)
 
 val person = Person(null)
 
-assert(??(person.name,"Bob") == "Bob")
+assert(??(person.name)("Bob") == "Bob")
+
+val person2: Person = null
+val person3 = Person("Sally")
+
+assert(??(person.name,person2.name,person3.name)("No name") == "Sally")
 ```
 
-With the `?` macro, the above would just return `null`. To be more explicit, the `??` macro would translate 
-`??(a.b.c,default)` into
+The null-safe coalesce operator also rewrites each arg so that it's null safe.  So you can pass in `a.b.c` as an expression
+without worrying if `a` or `b` are `null`. To be more explicit, the `??` macro would translate `??(a.b.c,a2.b.c)(default)` into
 
 ```scala
-if(a != null){
+val v1 = if(a != null){
   val b = a.b
   if(b != null){
     val c = b.c
     if(c != null){
       c
-    } else default
-  } else default
-} else default
+    } else null
+  } else null
+} else null
+val v2 = if(a2 != null){
+  val b = a2.b
+  if(b != null){
+    val c = b.c
+    if(c != null){
+      c
+    } else null
+  } else null
+} else null
+if(v1 != null) v1
+else if (v2 != null) v2
+else default
 ```
+
+Compared to the `?` macro in the case of a single arg, the `??` macro check that that _entire_ expression is not null. Whereas
+the `?` macro would just check that the preceding elements (e.g. `a` and `b` in `a.b.c`) aren't null before returning the default value.
 
 ## Performance
 

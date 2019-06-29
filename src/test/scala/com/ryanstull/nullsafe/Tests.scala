@@ -235,19 +235,40 @@ class Tests extends FlatSpec {
 	"??" should "return default NPE would have occurred" in {
 		val a = A(B(null))
 
-		assert(??(a.b.c.d.e.s,"Hello") == "Hello")
+		assert(??(a.b.c.d.e.s)("Hello") == "Hello")
 	}
 
 	"??" should "return default when desired field is null" in {
 		val a = A(B(C(D(E(null)))))
 
-		assert(??(a.b.c.d.e.s,"Hello") == "Hello")
+		assert(??(a.b.c.d.e.s)("Hello") == "Hello")
 	}
 
 	"??" should "return actual field when it is present" in {
 		val a = A(B(C(D(E("There")))))
 
-		assert(??(a.b.c.d.e.s,"Hello") == "There")
+		assert(??(a.b.c.d.e.s)("Hello") == "There")
+	}
+
+	"??" should "return second A without drilldown" in {
+		val a1 = null
+		val a2 = A(B(null))
+
+		assert(??(a1,a2)(A(null)) == A(B(null)))
+	}
+
+	"??" should "return second A with drilldown" in {
+		val a1 = A(null)
+		val a2 = A(B(C(null)))
+
+		assert(??(a1.b.c,a2.b.c)(C(D(null))) == C(null))
+	}
+
+	"??" should "return default with drilldown" in {
+		val a1: A = null
+		val a2 = A(B(null))
+
+		assert(??(a1.b.c.d.e.s,a2.b.c.d.e.s)("Hello") == "Hello")
 	}
 }
 
