@@ -181,6 +181,7 @@ package object nullsafe {
 		*         access on `null`, returns null instead.
 		*/
 	def ?[A <: AnyRef](expr: A): A = macro qMarkImpl[A]
+
 	/**
 		*	Translates an expression that could cause a NullPointerException due to method/field access on `null`
 		*	and adds explicit null-checks to avoid that.
@@ -191,7 +192,7 @@ package object nullsafe {
 		* @return The value of the expression. If there would have been a NullPointerException due to method/field
 		*         access on `null`, returns `default` instead.
 		*/
-	def ?[A <: AnyRef](expr: A, default: A): A = macro qMarkImplDefault[A]
+	def ?[A](expr: A, default: A): A = macro qMarkImplDefault[A]
 
 	/**
 		*	Translates an expression that could cause a NullPointerException due to method/field access on `null`
