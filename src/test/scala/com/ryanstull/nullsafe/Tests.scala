@@ -270,6 +270,18 @@ class Tests extends FlatSpec {
 
 		assert(??(a1.b.c.d.e.s,a2.b.c.d.e.s)("Hello") == "Hello")
 	}
+
+	"Casting" should "not fail in the middle of a chain" in {
+		val a: A = null
+
+		?(a.b.c.d.e.s.asInstanceOf[String].charAt(2).*(2))
+	}
+
+	"Casting" should "not fail at the end of a chain" in {
+		val a: A = null
+
+		?(a.b.c.d.e.s.asInstanceOf[String])
+	}
 }
 
 //Example of deeply nested domain object
@@ -289,5 +301,10 @@ object Tests {
 	}
 	case class A(b: B){
 		def getB(string: String) = B(null)
+	}
+
+	def main(args: Array[String]): Unit = {
+		val a: A = null
+		debugMaco(a.asInstanceOf[A])
 	}
 }

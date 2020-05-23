@@ -249,8 +249,17 @@ package object nullsafe {
 		*/
 	def notNull[A](expr: A): Boolean = macro notNullImpl[A]
 
+	def debugMaco[A](expr: A): A = macro debugMacoImpl[A]
+
+
 	//Putting the implementations in an object to avoid namespace pollution.
 	private[this] object MacroImplementations {
+
+		def debugMacoImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
+			import c.universe._
+			println(showRaw(expr.tree))
+			expr
+		}
 
 		def qMarkImpl[A : c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[A] = {
 			import c.universe._
@@ -342,6 +351,10 @@ package object nullsafe {
 							) => (t, MQueue.empty)
 						case t if t.symbol.isStatic => (t, MQueue.empty) //Static methods calls shouldn't be decomposed
 						case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty) //Nor Selects from packages
+						case TypeApply(Select(qualifier, termName), types) =>
+							val res = loop(qualifier,accumulator)
+							res._2 += ((qual: Tree) => TypeApply(Select(qual, termName), types))
+							res
 						case Select(qualifier, predName) =>
 							val res = loop(qualifier, accumulator)
 							res._2 += ((qual: Tree) => Select(qual,predName))
