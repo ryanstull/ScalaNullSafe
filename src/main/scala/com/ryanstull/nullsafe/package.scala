@@ -1,6 +1,7 @@
 package com.ryanstull
 
-import scala.collection.mutable
+import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
 
@@ -251,7 +252,6 @@ package object nullsafe {
 
 	def debugMaco[A](expr: A): A = macro debugMacoImpl[A]
 
-
 	//Putting the implementations in an object to avoid namespace pollution.
 	private[this] object MacroImplementations {
 
@@ -326,8 +326,6 @@ package object nullsafe {
 		 	(default: c.universe.Tree, checkLast: Boolean = false, finalTransform: c.universe.Tree => c.universe.Tree): c.universe.Tree = {
 			import c.universe._
 
-			import mutable.{Queue => MQueue}
-
 			def isPackageOrModule(sub: Tree): Boolean = {
 				val sym = sub.symbol
 
@@ -336,44 +334,47 @@ package object nullsafe {
 					sym.isPackage || sym.isPackageClass
 			}
 
-			def decomposeExp(tree: Tree): (Tree , MQueue[Tree => Tree]) = {
+			def decomposeExp(tree: Tree): (Tree , ListBuffer[Tree => Tree]) = {
 
 				def isAnyRef(sub: Tree): Boolean = sub.tpe <:< typeOf[AnyRef]
 
 				def nullable(tree: Tree): Boolean = isAnyRef(tree) && !isPackageOrModule(tree)
 
-				def loop(tree: Tree, accumulator: (Tree, MQueue[Tree => Tree]) = (null,MQueue.empty)): (Tree, MQueue[Tree => Tree]) = {
+				@tailrec
+				def loop(tree: Tree, transformations: ListBuffer[Tree => Tree] = ListBuffer.empty): (Tree, ListBuffer[Tree => Tree]) = {
 					tree match {
 						case t @ (
 							_: Literal | _:Ident | _:This | //These shouldn't be further decomposed
 							Apply(Select(New(_), _), _)  |  //Neither should constructors
 							Select(_ :This, _) | Apply(Select(_ :This, _), _) | Apply(_ :This, _) //Shouldn't check 'this' for null
-							) => (t, MQueue.empty)
-						case t if t.symbol.isStatic => (t, MQueue.empty) //Static methods calls shouldn't be decomposed
-						case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, MQueue.empty) //Nor Selects from packages
+							) => (t, transformations)
+						case t if t.symbol.isStatic => (t, transformations) //Static methods calls shouldn't be decomposed
+						case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, transformations) //Nor Selects from packages
 						case TypeApply(Select(qualifier, termName), types) =>
-							val res = loop(qualifier,accumulator)
-							res._2 += ((qual: Tree) => TypeApply(Select(qual, termName), types))
-							res
+							val transformation = (qual: Tree) => TypeApply(Select(qual, termName), types)
+							if(transformations.nonEmpty) {
+								val prev = transformations.head
+								transformations.update(0, prev.compose(transformation))
+							} else {
+								transformations.prepend(transformation)
+							}
+							loop(qualifier,transformations)
 						case Select(qualifier, predName) =>
-							val res = loop(qualifier, accumulator)
-							res._2 += ((qual: Tree) => Select(qual,predName))
-							res
+							transformations prepend ((qual: Tree) => Select(qual,predName))
+							loop(qualifier, transformations)
 						case Apply(fun: Ident, List(arg)) =>
-							val res = loop(arg, accumulator)
-							res._2 += ((qual: Tree) => Apply(fun, List(qual)))
-							res
+							transformations prepend ((qual: Tree) => Apply(fun, List(qual)))
+							loop(arg, transformations)
 						case Apply(Select(qualifier, predicate), args) =>
-							val res = loop(qualifier, accumulator)
-							res._2 += ((qual: Tree) => Apply(Select(qual, predicate), args))
-							res
+							transformations prepend ((qual: Tree) => Apply(Select(qual, predicate), args))
+							loop(qualifier, transformations)
 						case _ => throw new IllegalArgumentException
 					}
 				}
 				loop(tree)
 			}
 
-			def buildIfGuardedExp(prefix: Tree,selects: MQueue[Tree => Tree]): Tree = {
+			def buildIfGuardedExp(prefix: Tree,selects: ListBuffer[Tree => Tree]): Tree = {
 				var checkFinal = checkLast
 
 				def needsCaching(tree: Tree): Boolean = {
@@ -402,7 +403,11 @@ package object nullsafe {
 				}.tree
 
 				def next(prefix: Tree): Tree = {
-					val nextTree = if (selects.nonEmpty) selects.dequeue().apply(prefix) else prefix
+					val nextTree = if (selects.nonEmpty) {
+						val res = selects.head.apply(prefix)
+						selects.remove(0, 1)
+						res
+					} else prefix
 
 					if(selects.isEmpty && !checkFinal){
 						finalTransform(nextTree)

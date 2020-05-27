@@ -271,16 +271,37 @@ class Tests extends FlatSpec {
 		assert(??(a1.b.c.d.e.s,a2.b.c.d.e.s)("Hello") == "Hello")
 	}
 
+
+	"Casting" should "not fail as the first transformation" in {
+		val a: A = null
+
+		?(a.asInstanceOf[A])
+	}
+
 	"Casting" should "not fail in the middle of a chain" in {
 		val a: A = null
 
 		?(a.b.c.d.e.s.asInstanceOf[String].charAt(2).*(2))
 	}
 
-	"Casting" should "not fail at the end of a chain" in {
-		val a: A = null
+	"Casting" should "not fail when the data is actually there." in {
+		val a: A = A(B(C(D(E("Hello")))))
 
-		?(a.b.c.d.e.s.asInstanceOf[String])
+		?(a.b.c.d.e.s.asInstanceOf[String].charAt(2).*(2))
+	}
+
+	"Injecting a function call" should "work" in {
+		val a: A = A(B(C(D(E("Hello")))))
+
+		def useC(c: C): C = c
+
+		?(useC(a.b.c).d.e.s)
+	}
+
+	"Injecting a function call with an implicit" should "work" in {
+		val a: A = A(B(C(D(E("Hello")))))
+
+		?(a.b.c.d.e.s.nonEmpty)
 	}
 }
 
@@ -301,10 +322,5 @@ object Tests {
 	}
 	case class A(b: B){
 		def getB(string: String) = B(null)
-	}
-
-	def main(args: Array[String]): Unit = {
-		val a: A = null
-		debugMaco(a.asInstanceOf[A])
 	}
 }
