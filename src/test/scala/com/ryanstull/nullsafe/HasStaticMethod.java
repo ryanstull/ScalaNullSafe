@@ -9,4 +9,5 @@ public class HasStaticMethod {
 	public static String staticGetString() {
 		return "Hello";
 	}
+
 }

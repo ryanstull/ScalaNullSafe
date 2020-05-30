@@ -281,7 +281,7 @@ class Tests extends FlatSpec {
 	"Casting" should "not fail in the middle of a chain" in {
 		val a: A = null
 
-		?(a.b.c.d.e.s.asInstanceOf[String].charAt(2).*(2))
+		?(a.b.c.d.e.s.asInstanceOf[String].charAt(2).*(2).toString.getBytes.hashCode())
 	}
 
 	"Casting" should "not fail when the data is actually there." in {

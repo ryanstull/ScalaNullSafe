@@ -336,9 +336,20 @@ package object nullsafe {
 
 			def decomposeExp(tree: Tree): (Tree , ListBuffer[Tree => Tree]) = {
 
-				def isAnyRef(sub: Tree): Boolean = sub.tpe <:< typeOf[AnyRef]
+				def incorporateTransformation(transformations: ListBuffer[c.universe.Tree => c.universe.Tree], transformation: Tree => Tree, currentTree: Tree, dontCheckForNotNull: Boolean = false): Unit = {
+					def isAnyRef(sub: Tree): Boolean = sub.tpe <:< typeOf[AnyRef]
 
-				def nullable(tree: Tree): Boolean = isAnyRef(tree) && !isPackageOrModule(tree)
+					def nullable(tree: Tree): Boolean = {
+						isAnyRef(tree) && !isPackageOrModule(tree)
+					}
+
+					if (transformations.nonEmpty && (dontCheckForNotNull || !nullable(currentTree))) {
+						val prev = transformations.head
+						transformations.update(0, prev.compose(transformation))
+					} else {
+						transformations.prepend(transformation)
+					}
+				}
 
 				@tailrec
 				def loop(tree: Tree, transformations: ListBuffer[Tree => Tree] = ListBuffer.empty): (Tree, ListBuffer[Tree => Tree]) = {
@@ -352,21 +363,19 @@ package object nullsafe {
 						case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, transformations) //Nor Selects from packages
 						case TypeApply(Select(qualifier, termName), types) =>
 							val transformation = (qual: Tree) => TypeApply(Select(qual, termName), types)
-							if(transformations.nonEmpty) {
-								val prev = transformations.head
-								transformations.update(0, prev.compose(transformation))
-							} else {
-								transformations.prepend(transformation)
-							}
+							incorporateTransformation(transformations,transformation, tree, dontCheckForNotNull = true)
 							loop(qualifier,transformations)
 						case Select(qualifier, predName) =>
-							transformations prepend ((qual: Tree) => Select(qual,predName))
+							val transformation = (qual: Tree) => Select(qual,predName)
+							incorporateTransformation(transformations,transformation,tree)
 							loop(qualifier, transformations)
 						case Apply(fun: Ident, List(arg)) =>
-							transformations prepend ((qual: Tree) => Apply(fun, List(qual)))
+							val transformation = (qual: Tree) => Apply(fun, List(qual))
+							incorporateTransformation(transformations, transformation,tree)
 							loop(arg, transformations)
 						case Apply(Select(qualifier, predicate), args) =>
-							transformations prepend ((qual: Tree) => Apply(Select(qual, predicate), args))
+							val transformation = (qual: Tree) => Apply(Select(qual, predicate), args)
+							incorporateTransformation(transformations, transformation,tree)
 							loop(qualifier, transformations)
 						case _ => throw new IllegalArgumentException
 					}
