@@ -13,6 +13,7 @@ class Tests extends FlatSpec {
 	import Tests._
 
 	def getAnA: A = A(null)
+	def multiArgMeth(a: String, b: String): Boolean = a == b
 
 	"Null" should "not cause NPE" in {
 		?(null)
@@ -163,7 +164,7 @@ class Tests extends FlatSpec {
 	}
 
 	"opt(null)" should "equal None" in {
-		assert(opt(null) == None)
+		assert(opt(null).isEmpty)
 	}
 
 	"Not null" should "work for non-null" in {
@@ -290,8 +291,16 @@ class Tests extends FlatSpec {
 		?(a.b.c.d.e.s.asInstanceOf[String].charAt(2).*(2))
 	}
 
-	"Injecting a function call" should "work" in {
+	"Injecting a local function call" should "work" in {
 		val a: A = A(B(C(D(E("Hello")))))
+
+		def useC(c: C): C = c
+
+		?(useC(a.b.c).d.e.s)
+	}
+
+	"Injecting a local function call" should "work when null" in {
+		val a: A = null
 
 		def useC(c: C): C = c
 
@@ -302,6 +311,24 @@ class Tests extends FlatSpec {
 		val a: A = A(B(C(D(E("Hello")))))
 
 		?(a.b.c.d.e.s.nonEmpty)
+	}
+
+	"Injecting a method call" should "work" in {
+		val a = A(B(null))
+
+		?(a.getB(a.b.c.d.e.s).c)
+	}
+
+	"Multi-arg method" should "be null safe" in {
+		val a = A(B(C(D(null))))
+
+		?(multiArgMeth(a.b.c.d.e.s,a.b.c.d.e.s))
+	}
+
+	"Multi-arg method with predicate" should "be null safe" in {
+		val a = A(B(C(null)))
+
+		?(a.b.c.multiArgMeth(a.b.c.d.e.s,a.b.c.d.e.s))
 	}
 }
 
@@ -315,7 +342,9 @@ object Tests {
 		def getE: E = E(null)
 		def getInt: Int = 0
 	}
-	case class C(d: D)
+	case class C(d: D){
+		def multiArgMeth(s1: String, s2: String): Boolean = s1 == s2
+	}
 	case class B(c: C){
 		def getEmptyC: C = C(null)
 		def unit(): Unit = println("hello")

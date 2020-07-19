@@ -353,11 +353,14 @@ package object nullsafe {
 
 				@tailrec
 				def loop(tree: Tree, transformations: ListBuffer[Tree => Tree] = ListBuffer.empty): (Tree, ListBuffer[Tree => Tree]) = {
+					def rewriteArgsToNullSafe(list: List[Tree]): List[Tree] = {
+						list.map(tree => rewriteToNullSafe(c)(tree)(q"null", checkLast = false, a => a))
+					}
+
 					tree match {
 						case t @ (
 							_: Literal | _:Ident | _:This | //These shouldn't be further decomposed
-							Apply(Select(New(_), _), _)  |  //Neither should constructors
-							Select(_ :This, _) | Apply(Select(_ :This, _), _) | Apply(_ :This, _) //Shouldn't check 'this' for null
+							Select(_ :This, _) //Shouldn't check 'this' for null
 							) => (t, transformations)
 						case t if t.symbol.isStatic => (t, transformations) //Static methods calls shouldn't be decomposed
 						case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, transformations) //Nor Selects from packages
@@ -369,12 +372,17 @@ package object nullsafe {
 							val transformation = (qual: Tree) => Select(qual,predName)
 							incorporateTransformation(transformations,transformation,tree)
 							loop(qualifier, transformations)
-						case Apply(fun: Ident, List(arg)) =>
-							val transformation = (qual: Tree) => Apply(fun, List(qual))
-							incorporateTransformation(transformations, transformation,tree)
+						case apply @ Apply(_ @ (_:This | _:Ident | Select(_: This | _:New, _)), List(_: Literal)) =>
+							(apply, transformations)
+						case Apply(prefix @ (_:This | _:Ident | Select(_: This | _:New, _)), List(arg)) =>
+							val transformation = (arg: Tree) => Apply(prefix, List(arg))
+							incorporateTransformation(transformations,transformation, tree)
 							loop(arg, transformations)
+						case Apply(prefix @ (_:This | _:Ident | Select(_: This | _:New, _)), args) =>
+							val applyWithSafeArgs = Apply(prefix, rewriteArgsToNullSafe(args))
+							(applyWithSafeArgs, transformations)
 						case Apply(Select(qualifier, predicate), args) =>
-							val transformation = (qual: Tree) => Apply(Select(qual, predicate), args)
+							val transformation = (qual: Tree) => Apply(Select(qual, predicate), rewriteArgsToNullSafe(args))
 							incorporateTransformation(transformations, transformation,tree)
 							loop(qualifier, transformations)
 						case _ => throw new IllegalArgumentException
