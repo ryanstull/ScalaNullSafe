@@ -336,32 +336,29 @@ package object nullsafe {
 
 			def decomposeExp(tree: Tree): (Tree , ListBuffer[Tree => Tree]) = {
 
-				def incorporateTransformation(transformations: ListBuffer[c.universe.Tree => c.universe.Tree], transformation: Tree => Tree, currentTree: Tree, dontCheckForNotNull: Boolean = false): Unit = {
-					def isAnyRef(sub: Tree): Boolean = sub.tpe <:< typeOf[AnyRef]
-
+				def incorporateTransformation(transformations: ListBuffer[Tree => Tree], transformation: Tree => Tree, currentTree: Tree, canFoldInto: Boolean = false, foldable: Boolean = false, dontCheckForNotNull: Boolean = false): Unit = {
 					def nullable(tree: Tree): Boolean = {
+						def isAnyRef(sub: Tree): Boolean = sub.tpe <:< typeOf[AnyRef]
 						isAnyRef(tree) && !isPackageOrModule(tree)
 					}
 
-					if (transformations.nonEmpty && (dontCheckForNotNull || !nullable(currentTree))) {
+					if (transformations.nonEmpty && (dontCheckForNotNull || !nullable(currentTree) || (canFoldInto && foldable))) {
 						val prev = transformations.head
-						transformations.update(0, prev.compose(transformation))
+						transformations.update(0, transformation.andThen(prev))
 					} else {
 						transformations.prepend(transformation)
 					}
 				}
 
 				@tailrec
-				def loop(tree: Tree, transformations: ListBuffer[Tree => Tree] = ListBuffer.empty): (Tree, ListBuffer[Tree => Tree]) = {
+				def loop(tree: Tree, transformations: ListBuffer[Tree => Tree] = ListBuffer.empty, canFoldInto: Boolean = false): (Tree, ListBuffer[Tree => Tree]) = {
 					def rewriteArgsToNullSafe(list: List[Tree]): List[Tree] = {
 						list.map(tree => rewriteToNullSafe(c)(tree)(q"null", checkLast = false, a => a))
 					}
 
 					tree match {
-						case t @ (
-							_: Literal | _:Ident | _:This | //These shouldn't be further decomposed
-							Select(_ :This, _) //Shouldn't check 'this' for null
-							) => (t, transformations)
+						case t :Ident => (t, transformations)
+						case t @ (_: Literal | _:This) => (t, transformations)
 						case t if t.symbol.isStatic => (t, transformations) //Static methods calls shouldn't be decomposed
 						case t @ Select(qualifier, _) if isPackageOrModule(qualifier) => (t, transformations) //Nor Selects from packages
 						case TypeApply(Select(qualifier, termName), types) =>
@@ -373,14 +370,24 @@ package object nullsafe {
 							incorporateTransformation(transformations,transformation,tree)
 							loop(qualifier, transformations)
 						case apply @ Apply(_ @ (_:This | _:Ident | Select(_: This | _:New, _)), List(_: Literal)) =>
-							(apply, transformations)
+							if(canFoldInto) {
+								({
+									val trans = transformations.remove(0)
+									trans.apply(apply)
+								}, transformations)
+							} else (apply, transformations)
 						case Apply(prefix @ (_:This | _:Ident | Select(_: This | _:New, _)), List(arg)) =>
 							val transformation = (arg: Tree) => Apply(prefix, List(arg))
-							incorporateTransformation(transformations,transformation, tree)
-							loop(arg, transformations)
+							val foldable = true
+							incorporateTransformation(transformations,transformation, tree, canFoldInto = canFoldInto, foldable = foldable)
+							loop(arg, transformations, canFoldInto = foldable)
 						case Apply(prefix @ (_:This | _:Ident | Select(_: This | _:New, _)), args) =>
 							val applyWithSafeArgs = Apply(prefix, rewriteArgsToNullSafe(args))
 							(applyWithSafeArgs, transformations)
+						case Apply(Select(qualifier, predicate), List(arg)) =>
+							val transformation = (qual: Tree) => Apply(Select(qual, predicate), List(rewriteToNullSafe(c)(arg)(q"null", checkLast = false, a => a)))
+							incorporateTransformation(transformations, transformation,tree)
+							loop(qualifier, transformations)
 						case Apply(Select(qualifier, predicate), args) =>
 							val transformation = (qual: Tree) => Apply(Select(qual, predicate), rewriteArgsToNullSafe(args))
 							incorporateTransformation(transformations, transformation,tree)
