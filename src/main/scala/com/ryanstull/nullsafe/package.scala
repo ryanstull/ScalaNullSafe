@@ -296,24 +296,27 @@ package object nullsafe {
     def doubleQMarkImpl[A: c.WeakTypeTag](c: blackbox.Context)(exprs: c.Expr[A]*)(default: c.Expr[A]): c.Expr[A] = {
       import c.universe._
 
-      val safeTrees = exprs.map(expr => rewriteToNullSafe(c)(expr.tree)(q"null", checkLast = true, a => a))
+      def genValue(exprs: Seq[Tree]): Tree = {
+        if(exprs.nonEmpty) {
+          val head = exprs.head
+          val safeTree = rewriteToNullSafe(c)(head)(q"null", checkLast = false, a => a)
 
-      val identsWithVals = safeTrees.map { safeTree =>
-        val freshNameTerm = TermName(c.freshName)
-        (Ident(freshNameTerm), ValDef(Modifiers(Flag.SYNTHETIC), freshNameTerm, TypeTree(safeTree.tpe), safeTree))
+          val freshNameTerm = TermName(c.freshName)
+          val (identExpr, valDef) = (c.Expr(Ident(freshNameTerm)), ValDef(Modifiers(Flag.SYNTHETIC), freshNameTerm, TypeTree(safeTree.tpe), safeTree))
+
+          Block(
+            valDef,
+            reify {
+              if (identExpr.splice != null) identExpr.splice
+              else c.Expr(genValue(exprs.tail)).splice
+            }.tree
+          )
+        } else default.tree
       }
 
-      def genIfBlock(idents: Seq[Ident]): Tree = {
-        val headExpr = c.Expr(idents.head)
-        reify {
-          if (headExpr.splice != null) headExpr.splice
-          else c.Expr(if (idents.size > 1) genIfBlock(idents.tail) else default.tree).splice
-        }.tree
-      }
-
-      c.Expr(Block(
-        identsWithVals.map(_._2) :+ genIfBlock(identsWithVals.map(_._1)): _*
-      ))
+      c.Expr(
+        genValue(exprs.map(_.tree))
+      )
     }
 
     def optImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[Option[A]] = {

@@ -150,27 +150,31 @@ The null-safe coalesce operator also rewrites each arg so that it's null safe.  
 without worrying if `a` or `b` are `null`. To be more explicit, the `??` macro would translate `??(a.b.c,a2.b.c)(default)` into
 
 ```scala
-val v1 = if(a != null){
-  val b = a.b
-  if(b != null){
-    val c = b.c
-    if(c != null){
-      c
+{
+    val v1 = if(a != null){
+      val b = a.b
+      if(b != null){
+        val c = b.c
+        if(c != null){
+          c
+        } else null
+      } else null
     } else null
-  } else null
-} else null
-val v2 = if(a2 != null){
-  val b = a2.b
-  if(b != null){
-    val c = b.c
-    if(c != null){
-      c
-    } else null
-  } else null
-} else null
-if(v1 != null) v1
-else if (v2 != null) v2
-else default
+    if(v1 != null) v1
+    else {
+        val v2 = if(a2 != null){
+          val b = a2.b
+          if(b != null){
+            val c = b.c
+            if(c != null){
+              c
+            } else null
+          } else null
+        } else null
+        if (v2 != null) v2
+        else default
+    }
+}
 ```
 
 Compared to the `?` macro in the case of a single arg, the `??` macro check that that _entire_ expression is not null. Whereas

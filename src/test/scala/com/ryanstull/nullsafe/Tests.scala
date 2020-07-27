@@ -277,6 +277,13 @@ class Tests extends FlatSpec {
 		assert(??(a1.b.c.d.e.s,a2.b.c.d.e.s)("Hello") == "Hello")
 	}
 
+	"??" should "only evaluate the minimum number of necessary expressions" in {
+		val a = A(null)
+		val a2 = A(B(C(D(E("123")))))
+		def throwExcep = throw new IllegalArgumentException
+
+		??(a.b.c.d.e.s, a2.b.c.d.e.s, throwExcep)("AAA")
+	}
 
 	"Casting" should "not fail as the first transformation" in {
 		val a: A = null
@@ -343,7 +350,6 @@ class Tests extends FlatSpec {
 
 		assert(?(z(y(x(null)))) == "default")
 	}
-
 }
 
 //Example of deeply nested domain object
