@@ -12,8 +12,13 @@ class Tests extends FlatSpec {
 
 	import Tests._
 
+	val a: A = A(null)
 	def getAnA: A = A(null)
 	def multiArgMeth(a: String, b: String): Boolean = a == b
+
+	"This" should "not be checked for null" in {
+		?(this.a)
+	}
 
 	"Null" should "not cause NPE" in {
 		?(null)
@@ -136,7 +141,7 @@ class Tests extends FlatSpec {
 	"Methods defined in the local scope" should "not cause NPE" in {
 		val a = A(null)
 
-		def getCFromB(b: B): C = b.c
+		def getCFromB(b: B): C = ?(b.c)
 
 		?(getCFromB(a.b).d)
 	}
@@ -144,7 +149,7 @@ class Tests extends FlatSpec {
 	"Implicit methods" should "not cause NPE" in {
 		val a = A(null)
 
-		implicit def getCFromB(b: B): C = b.c
+		implicit def getCFromB(b: B): C = ?(b.c)
 
 		?(a.b.d)
 	}
@@ -330,6 +335,15 @@ class Tests extends FlatSpec {
 
 		?(a.b.c.multiArgMeth(a.b.c.d.e.s,a.b.c.d.e.s))
 	}
+
+	"Nested function calls" should "allow null as input" in {
+		def x(string: String): String = string
+		def y(string: String): String = if (string == null) "default" else string
+		def z(string: String): String = string
+
+		assert(?(z(y(x(null)))) == "default")
+	}
+
 }
 
 //Example of deeply nested domain object
