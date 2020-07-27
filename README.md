@@ -183,6 +183,9 @@ the `?` macro would just check that the preceding elements (e.g. `a` and `b` in 
 ## Performance
 
 Here's the result of running the included jmh benchmarks:
+
+![Throughput](throughput.png)
+
 ```
 [info] Benchmark                             Mode  Cnt    Score   Error   Units
 [info] Benchmarks.ScalaNullSafeAbsent       thrpt   20  428.124 ± 1.625  ops/us
