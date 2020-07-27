@@ -19,9 +19,9 @@ class Benchmarks {
 
 	import Tests._
 
-	val a = A(B(C(D(E("test")))))
-	val aWithNull = A(B(null))
-	val nul = null //Refer to this null to prevent constant folding
+	val a: A = A(B(C(D(E("test")))))
+	val aWithNull: A = A(B(null))
+	val nul: Null = null //Refer to this null to prevent constant folding
 
 	@Benchmark
 	def fastButUnsafe: String = a.b.c.d.e.s

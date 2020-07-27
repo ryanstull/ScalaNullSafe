@@ -5,9 +5,9 @@ import org.scalatest.FlatSpec
 import scala.language.implicitConversions
 
 /**
-  * @author ryan
-  * @since 12/5/18.
-  */
+	* @author ryan
+	* @since 12/5/18.
+	*/
 class Tests extends FlatSpec {
 
 	import Tests._
@@ -187,55 +187,55 @@ class Tests extends FlatSpec {
 	"Using custom default" should "work for absent case" in {
 		val a = A(B(null))
 
-		assert(?(a.b.c.d.e.s,"") == "")
+		assert(?(a.b.c.d.e.s, "") == "")
 	}
 
 	"Using custom default" should "work for present case" in {
 		val a = A(B(C(D(E("Hello")))))
 
-		assert(?(a.b.c.d.e.s,"") == "Hello")
+		assert(?(a.b.c.d.e.s, "") == "Hello")
 	}
 
 	"Using custom default" should "work for absent case with Int" in {
 		val a = A(B(null))
 
-		assert(?(a.b.c.d.getInt,new Integer(3)) == 3)
+		assert(?(a.b.c.d.getInt, new Integer(3)) == 3)
 	}
 
 	"Using custom default" should "work for present case with Int" in {
 		val a = A(B(C(D(E("Hello")))))
 
-		assert(?(a.b.c.d.getInt,new Integer(3)) == 0)
+		assert(?(a.b.c.d.getInt, new Integer(3)) == 0)
 	}
 
 	"Using custom default" should "work for absent case with Boolean" in {
 		val a = A(B(null))
 
-		assert(?(a.b.c.d.e.getBool,true) == true)
+		assert(?(a.b.c.d.e.getBool, true) == true)
 	}
 
 	"Using custom default" should "work for present case with Boolean" in {
 		val a = A(B(C(D(E("Hello")))))
 
-		assert(?(a.b.c.d.e.getBool,true) == false)
+		assert(?(a.b.c.d.e.getBool, true) == false)
 	}
 
 	"Using custom default" should "work for absent case with Double" in {
 		val a = A(B(null))
 
-		assert(?(a.b.c.d.e.getDouble,3.0) == 3.0)
+		assert(?(a.b.c.d.e.getDouble, 3.0) == 3.0)
 	}
 
 	"Using custom default" should "work for present case with Double" in {
 		val a = A(B(C(D(E("Hello")))))
 
-		assert(?(a.b.c.d.e.getDouble,3.0) == 0.0)
+		assert(?(a.b.c.d.e.getDouble, 3.0) == 0.0)
 	}
 
 	"Using custom default" should "work for absent case with Unit" in {
 		val a = A(B(null))
 
-		?(a.b.c.d.e.s.notify(),println("Absent"))
+		?(a.b.c.d.e.s.notify(), println("Absent"))
 	}
 
 	"??" should "return default NPE would have occurred" in {
@@ -260,26 +260,27 @@ class Tests extends FlatSpec {
 		val a1 = null
 		val a2 = A(B(null))
 
-		assert(??(a1,a2)(A(null)) == A(B(null)))
+		assert(??(a1, a2)(A(null)) == A(B(null)))
 	}
 
 	"??" should "return second A with drilldown" in {
 		val a1 = A(null)
 		val a2 = A(B(C(null)))
 
-		assert(??(a1.b.c,a2.b.c)(C(D(null))) == C(null))
+		assert(??(a1.b.c, a2.b.c)(C(D(null))) == C(null))
 	}
 
 	"??" should "return default with drilldown" in {
 		val a1: A = null
 		val a2 = A(B(null))
 
-		assert(??(a1.b.c.d.e.s,a2.b.c.d.e.s)("Hello") == "Hello")
+		assert(??(a1.b.c.d.e.s, a2.b.c.d.e.s)("Hello") == "Hello")
 	}
 
 	"??" should "only evaluate the minimum number of necessary expressions" in {
 		val a = A(null)
 		val a2 = A(B(C(D(E("123")))))
+
 		def throwExcep = throw new IllegalArgumentException
 
 		??(a.b.c.d.e.s, a2.b.c.d.e.s, throwExcep)("AAA")
@@ -334,13 +335,13 @@ class Tests extends FlatSpec {
 	"Multi-arg method" should "be null safe" in {
 		val a = A(B(C(D(null))))
 
-		?(multiArgMeth(a.b.c.d.e.s,a.b.c.d.e.s))
+		?(multiArgMeth(a.b.c.d.e.s, a.b.c.d.e.s))
 	}
 
 	"Multi-arg method with predicate" should "be null safe" in {
 		val a = A(B(C(null)))
 
-		?(a.b.c.multiArgMeth(a.b.c.d.e.s,a.b.c.d.e.s))
+		?(a.b.c.multiArgMeth(a.b.c.d.e.s, a.b.c.d.e.s))
 	}
 
 	"Nested function calls" should "allow null as input" in {
@@ -354,22 +355,28 @@ class Tests extends FlatSpec {
 
 //Example of deeply nested domain object
 object Tests {
-	case class E(s: String){
+
+	case class E(s: String) {
 		def getBool: Boolean = false
 		def getDouble: Double = 0.0
 	}
-	case class D(e: E){
+
+	case class D(e: E) {
 		def getE: E = E(null)
 		def getInt: Int = 0
 	}
-	case class C(d: D){
+
+	case class C(d: D) {
 		def multiArgMeth(s1: String, s2: String): Boolean = s1 == s2
 	}
-	case class B(c: C){
+
+	case class B(c: C) {
 		def getEmptyC: C = C(null)
 		def unit(): Unit = println("hello")
 	}
-	case class A(b: B){
-		def getB(string: String) = B(null)
+
+	case class A(b: B) {
+		def getB(string: String): B = B(null)
 	}
+
 }
