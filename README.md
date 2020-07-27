@@ -188,19 +188,19 @@ Here's the result of running the included jmh benchmarks:
 
 ```
 [info] Benchmark                             Mode  Cnt    Score   Error   Units
+[info] Benchmarks.fastButUnsafe             thrpt   20  230.157 ± 0.572  ops/us
 [info] Benchmarks.ScalaNullSafeAbsent       thrpt   20  428.124 ± 1.625  ops/us
 [info] Benchmarks.ScalaNullSafePresent      thrpt   20  232.066 ± 0.575  ops/us
 [info] Benchmarks.explicitSafeAbsent        thrpt   20  429.090 ± 0.842  ops/us
 [info] Benchmarks.explicitSafePresent       thrpt   20  231.400 ± 0.660  ops/us
-[info] Benchmarks.fastButUnsafe             thrpt   20  230.157 ± 0.572  ops/us
+[info] Benchmarks.optionSafeAbsent          thrpt   20  139.369 ± 0.272  ops/us
+[info] Benchmarks.optionSafePresent         thrpt   20  129.394 ± 0.102  ops/us
 [info] Benchmarks.loopSafeAbsent            thrpt   20  114.330 ± 0.113  ops/us
 [info] Benchmarks.loopSafePresent           thrpt   20   59.513 ± 0.097  ops/us
 [info] Benchmarks.monocleOptionalAbsent     thrpt   20   77.755 ± 0.800  ops/us
 [info] Benchmarks.monocleOptionalPresent    thrpt   20   36.446 ± 0.506  ops/us
 [info] Benchmarks.nullSafeNavigatorAbsent   thrpt   20  274.222 ± 0.441  ops/us
 [info] Benchmarks.nullSafeNavigatorPresent  thrpt   20  181.356 ± 1.538  ops/us
-[info] Benchmarks.optionSafeAbsent          thrpt   20  139.369 ± 0.272  ops/us
-[info] Benchmarks.optionSafePresent         thrpt   20  129.394 ± 0.102  ops/us
 [info] Benchmarks.tryCatchSafeAbsent        thrpt   20  254.158 ± 0.686  ops/us
 [info] Benchmarks.tryCatchSafePresent       thrpt   20  230.081 ± 0.659  ops/us
 [success] Total time: 3909 s, completed Feb 24, 2019 3:03:02 PM
