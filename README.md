@@ -114,6 +114,12 @@ All of the above work for method invocation as well as property access, and the 
  
  will be translated properly.
  
+Also the macro will make the arguments to method and function calls null-safe as well:
+
+`?(a.b.c.method(d.e.f))`
+
+So you don't have to worry if `d` or `e` would be null.
+ 
 For the `?` macro, you can also provide a custom default instead of `null`, by passing it in as the second
 parameter.  For example
 
