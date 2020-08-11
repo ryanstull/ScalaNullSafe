@@ -108,6 +108,8 @@ if(a != null){
 } else false
 ```
 
+## Safe translation
+
 All of the above work for method invocation as well as property access, and the two can be intermixed. For example: 
 
 `?(someObj.methodA().field1.twoArgMethod("test",1).otherField)`
@@ -130,6 +132,8 @@ val person: Person = null
 
 assert(?(person.name,"") == "")
 ```
+
+## `??` macro
 
 There's also a `??` ([null coalesce operator](https://en.wikipedia.org/wiki/Null_coalescing_operator)) which is used to select the first non-null value from a var-args list of expressions.
 
@@ -179,6 +183,57 @@ without worrying if `a` or `b` are `null`. To be more explicit, the `??` macro w
 
 Compared to the `?` macro in the case of a single arg, the `??` macro check that that _entire_ expression is not null. Whereas
 the `?` macro would just check that the preceding elements (e.g. `a` and `b` in `a.b.c`) aren't null before returning the default value.
+
+### Efficient null-checks
+
+The macro is also smart about what it checks for null, so anything that is `<: AnyVal` will not be checked for null.  For example
+
+```scala
+case class A(b: B)
+case class B(c: C)
+case class C(s: String)
+
+?(a.b.c.s.asInstanceOf[String].charAt(2).*(2).toString.getBytes.hashCode())
+```
+
+Would be translated to:
+
+```scala
+if (a != null)
+  {
+    val b = a.b;
+    if (b != null)
+      {
+        val c = b.c;
+        if (c != null)
+          {
+            val s = c.s;
+            if (s != null)
+              {
+                val s2 = s.asInstanceOf[String].charAt(2).$times(2).toString();
+                if (s2 != null)
+                  {
+                    val bytes = s2.getBytes();
+                    if (bytes != null)
+                      bytes.hashCode()
+                    else
+                      null
+                  }
+                else
+                  null
+              }
+            else
+              null
+          }
+        else
+          null
+      }
+    else
+      null
+  }
+else
+  null
+```
 
 ## Performance
 
