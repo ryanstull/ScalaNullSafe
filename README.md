@@ -54,6 +54,8 @@ notNull(a2.b.c.d.e.s) //Returns true
 
 ## How it works
 
+### `?` macro
+
 The macro works by translating an expression, inserting null-checks before each intermediate result is used, turning
 `?(a.b.c)`, for example, into
 
@@ -86,6 +88,8 @@ if(a != null){
 } else null
 ```
 
+### `opt` macro
+
 The `opt` macro is very similar, translating `opt(a.b.c)` into:
 
 ```scala
@@ -96,6 +100,8 @@ if(a != null){
   } else None
 } else None
 ```
+
+### `notNull` macro
 
 And the `notNull` macro, translating `notNull(a.b.c)` into:
 
