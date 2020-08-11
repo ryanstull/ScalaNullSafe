@@ -114,7 +114,7 @@ if(a != null){
 } else false
 ```
 
-## Safe translation
+### Safe translation
 
 All of the above work for method invocation as well as property access, and the two can be intermixed. For example: 
 
@@ -139,7 +139,7 @@ val person: Person = null
 assert(?(person.name,"") == "")
 ```
 
-## `??` macro
+### `??` macro
 
 There's also a `??` ([null coalesce operator](https://en.wikipedia.org/wiki/Null_coalescing_operator)) which is used to select the first non-null value from a var-args list of expressions.
 
