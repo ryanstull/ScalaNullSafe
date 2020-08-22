@@ -6,16 +6,17 @@ The purpose of this macro is to provide a quick, easy, readable/writable, and ef
 
 | Implementation      	| Null-safe 	| Readable & Writable | Efficient 	|
 |----------------------	|-----------	|-------------------	|-----------	|
-| ScalaNullSafe        	| ✔️         	| ✔️                 	| ✔️         	|
+| 🎉 **ScalaNullSafe** 🎉        	| ✔️         	| ✔️                 	| ✔️         	|
 | Normal access        	| ⛔         	| ✔️                 	| ✔️         	|
 | Explicit null-checks 	| ✔️         	| ⛔                 	| ✔️         	|
 | Option flatMap       	| ✔️         	| ⚠️                 	| ⛔         	|
 | For loop flatMap     	| ✔️         	| ⚠️                 	| ⛔         	|
-| Monocle Optional (lenses)| ✔️         	| 💀	                  | ⛔         	|
 | Null-safe navigator  	| ✔️         	| ⚠️                 	| ⚠️         	|
 | Try-catch NPE        	| ✔️         	| ✔️                 	| ⚠️         	|
+| Monocle Optional (lenses)| ✔️         	| 💀	                  | ⛔         	|
+| thoughtworks NullSafe DSL| ✔️         	| ✔️	                  | ⚠         	|
 
-Key: ✔️ = Good, ⚠️ = Problematic, ⛔ = Bad
+Key: ✔️ = Good, ⚠️ = Sub-optimal, ⛔ = Bad
 
 ## How to use
 
@@ -260,17 +261,18 @@ Here's the result of running the included jmh benchmarks:
 [info] Benchmarks.optionSafePresent         thrpt   20  129.394 ± 0.102  ops/us
 [info] Benchmarks.loopSafeAbsent            thrpt   20  114.330 ± 0.113  ops/us
 [info] Benchmarks.loopSafePresent           thrpt   20   59.513 ± 0.097  ops/us
-[info] Benchmarks.monocleOptionalAbsent     thrpt   20   77.755 ± 0.800  ops/us
-[info] Benchmarks.monocleOptionalPresent    thrpt   20   36.446 ± 0.506  ops/us
 [info] Benchmarks.nullSafeNavigatorAbsent   thrpt   20  274.222 ± 0.441  ops/us
 [info] Benchmarks.nullSafeNavigatorPresent  thrpt   20  181.356 ± 1.538  ops/us
 [info] Benchmarks.tryCatchSafeAbsent        thrpt   20  254.158 ± 0.686  ops/us
 [info] Benchmarks.tryCatchSafePresent       thrpt   20  230.081 ± 0.659  ops/us
+[info] Benchmarks.monocleOptionalAbsent     thrpt   20   77.755 ± 0.800  ops/us
+[info] Benchmarks.monocleOptionalPresent    thrpt   20   36.446 ± 0.506  ops/us
+[info] Benchmarks.nullSafeDslAbsent         thrpt   30  228.660 ± 0.475  ops/us
+[info] Benchmarks.nullSafeDslPresent        thrpt   30  119.723 ± 0.506  ops/us
 [success] Total time: 3909 s, completed Feb 24, 2019 3:03:02 PM
 ```
 
-All of the `Present` benchmarks are where the value was actually defined and the `Absent`
-ones are where one of the intermediate values, was `null`; or in other words, where an NPE would have occurred.
+You can find the source code for the JMH benchmarks [here](https://github.com/ryanstull/ScalaNullSafe/blob/ebc0ed592fa5997a9c7b868cf8cdcea590e8ae07/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L18).  If you want to run the benchmarks yourself, just run `sbt bench`, or `sbt quick-bench` for a shorter run.
 
 These benchmarks compare all of the known ways (or at least the ways that I know of) to handle null-safety in scala.  It demonstrates 
 that the explicit null-safety is the highest performing and that the 'ScalaNullSafe' macro has 

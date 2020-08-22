@@ -20,6 +20,8 @@ inThisBuild(List(
 	)
 ))
 
+//addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "latest.release")
+
 lazy val root = (project in file("."))
 	.settings(
 		name := "ScalaNullSafe",
@@ -49,7 +51,13 @@ lazy val benchmarks = (project in file("benchmarks"))
 		libraryDependencies ++= Seq(
 			"com.github.julien-truffaut" %%  "monocle-core"  % monocleVersion % "test",
 			"com.github.julien-truffaut" %%  "monocle-macro" % monocleVersion % "test",
+			"com.thoughtworks.dsl" %% "keywords-nullsafe" % "latest.release"
 		)
+		,
+		addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "latest.release"),
+		addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-reseteverywhere" % "latest.release")
 	).dependsOn(root % "test->test").enablePlugins(JmhPlugin)
+
+
 
 updateOptions := updateOptions.value.withGigahorse(false)
