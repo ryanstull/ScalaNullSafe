@@ -351,6 +351,37 @@ class Tests extends FlatSpec {
 
 		assert(?(z(y(x(null)))) == "default")
 	}
+
+	"Using an implicit class" should "not throw an exception" in {
+		val a: String = null
+		?(a.toInt)
+
+		val a2: String = "3"
+		assert(?(a2.toInt) == 3)
+	}
+
+	implicit class cOps(c: C) {
+		def getD: D = c.d
+	}
+
+	"Using a user defined implicit class" should "not throw an exception" in {
+		val a = A(B(null))
+
+		?(a.b.c.getD.e.s)
+
+		val a2 = A(B(C(null)))
+
+		?(a2.b.c.getD.e.s)
+
+		val a3 = A(B(C(D(null))))
+
+		?(a3.b.c.getD.e.s)
+	}
+
+	"Using two different implicit classes" should "not throw an exception" in {
+		val a: A = A(B(C(D(E(null)))))
+		?(a.b.c.getD.e.s.toInt)
+	}
 }
 
 //Example of deeply nested domain object

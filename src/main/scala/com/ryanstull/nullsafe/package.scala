@@ -386,6 +386,10 @@ package object nullsafe {
 							val transformation = (qual: Tree) => TypeApply(Select(qual, termName), types)
 							incorporateTransformation(transformation, dontCheckForNotNull = true)
 							loop(qualifier, transformations)
+						case Select(Apply(implicitClass, qualifier :: Nil), predName) if implicitClass.symbol.isImplicit => //Implicit class
+							val transformation = (qual: Tree) => Select(Apply(implicitClass,List(qual)), predName)
+							incorporateTransformation(transformation)
+							loop(qualifier, transformations)
 						case Select(qualifier, predName) => //Select
 							val transformation = (qual: Tree) => Select(qual, predName)
 							incorporateTransformation(transformation)
