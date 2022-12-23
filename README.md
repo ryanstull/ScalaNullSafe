@@ -2,6 +2,8 @@
 
 The purpose of this macro is to provide a quick, easy, readable/writable, and efficient way to make code null-safe in scala.
 
+[![Scala CI](https://github.com/ryanstull/ScalaNullSafe/actions/workflows/test.yml/badge.svg)](https://github.com/ryanstull/ScalaNullSafe/actions/workflows/test.yml)
+
 ### Quick comparison of null-safe implementations:
 
 | Implementation      	| Null-safe 	| Readable & Writable | Efficient 	|
