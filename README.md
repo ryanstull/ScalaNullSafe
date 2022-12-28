@@ -16,17 +16,22 @@ The purpose of this macro is to provide a quick, easy, readable/writable, and ef
 | Null-safe navigator  	| ✔️         	| ⚠️                 	| ⚠️         	|
 | Try-catch NPE        	| ✔️         	| ✔️                 	| ⚠️         	|
 | Monocle Optional (lenses)| ✔️         	| 💀	                  | ⛔         	|
-| thoughtworks NullSafe DSL| ✔️         	| ✔️	                  | ⚠         	|
+| thoughtworks NullSafe DSL| ✔️         	| ✔️	                  | ⚠️         	|
 
-Key: ✔️ = Good, ⚠️ = Sub-optimal, ⛔ = Bad
+Key: ✔️ = Good, ⚠️ = Sub-optimal, ⛔ = Bad, 💀 = Horrible
 
 ## How to use
 
 Add the dependency:
 
-`libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.6"`
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13)
 
-Example use:
+```sbt
+libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.6"
+```
+<sub>* Since macros are only used at compile time, if your build tool has a way to specify compile-time-only dependencies, you can use that for this library</sub>
+
+### Example use:
 
 ```scala
 import com.ryanstull.nullsafe._
