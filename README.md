@@ -27,7 +27,7 @@ Add the dependency:
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13)
 
 ```sbt
-libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.6"
+libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.6" % "provided"
 ```
 <sub>* Since macros are only used at compile time, if your build tool has a way to specify compile-time-only dependencies, you can use that for this library</sub>
 
@@ -279,11 +279,18 @@ Here's the result of running the included jmh benchmarks:
 [success] Total time: 3909 s, completed Feb 24, 2019 3:03:02 PM
 ```
 
-You can find the source code for the JMH benchmarks [here](https://github.com/ryanstull/ScalaNullSafe/blob/ebc0ed592fa5997a9c7b868cf8cdcea590e8ae07/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L18).  If you want to run the benchmarks yourself, just run `sbt bench`, or `sbt quick-bench` for a shorter run.
+You can find the source code for the JMH benchmarks [here](https://github.com/ryanstull/ScalaNullSafe/blob/ebc0ed592fa5997a9c7b868cf8cdcea590e8ae07/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L18).  If you want to run the benchmarks yourself, just run `sbt bench`, or `sbt quick-bench` for a shorter run. These benchmarks
+compare all of the known ways (or at least the ways that I know of) to handle null-safety in scala.
 
-These benchmarks compare all of the known ways (or at least the ways that I know of) to handle null-safety in scala.  It demonstrates 
-that the explicit null-safety is the highest performing and that the 'ScalaNullSafe' macro has 
-equivalent performance.
+The reason ScalaNullSafe performs the best is because there are no extraneous method calls, memory allocations, or exception handling, which all of the other solutions use.
+By leveraging the power of macros we are able to produce theoretically optimal bytecode, whose performance is equivalent to the explicit null safety approach.
+
+## Why?
+
+Some people have questioned the reason for this library's existence since, in Scala, the idiomatic way to handle potentially absent values is to use `Option[A]`. 
+The reason this library is needed is because there will be situations where you need to extract deeply nested data, in a null-safe way, that was not defined using `Option[A]`. 
+This mostly happens when interoping with Java, but could also occur with any other JVM language.  The original reason this library was created was to simplify a large amount of
+code that dealt with extracting values out of highly nested [Avro](https://avro.apache.org/) data structures.
 
 ## Notes
 
