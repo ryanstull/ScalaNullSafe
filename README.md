@@ -1,6 +1,6 @@
 # ScalaNullSafe
 
-The purpose of this macro is to provide a quick, easy, readable/writable, and efficient way to make code null-safe in scala.
+The purpose of this library is to provide a quick, easy, readable/writable, and efficient way to do null-safe traversals in Scala.
 
 [![Scala CI](https://github.com/ryanstull/ScalaNullSafe/actions/workflows/test.yml/badge.svg)](https://github.com/ryanstull/ScalaNullSafe/actions/workflows/test.yml)
 
@@ -283,12 +283,12 @@ You can find the source code for the JMH benchmarks [here](https://github.com/ry
 compare all of the known ways (or at least the ways that I know of) to handle null-safety in scala.
 
 The reason ScalaNullSafe performs the best is because there are no extraneous method calls, memory allocations, or exception handling, which all of the other solutions use.
-By leveraging the power of macros we are able to produce theoretically optimal bytecode, whose performance is equivalent to the explicit null safety approach.
+By leveraging the power of macros we are able to produce theoretically-optimal bytecode, whose performance is equivalent to the explicit null safety approach.
 
 ## Why?
 
 Some people have questioned the reason for this library's existence since, in Scala, the idiomatic way to handle potentially absent values is to use `Option[A]`. 
-The reason this library is needed is because there will be situations where you need to extract deeply nested data, in a null-safe way, that was not defined using `Option[A]`. 
+The reason this library is needed is that there are situations where you need to extract deeply nested data, in a null-safe way, that was not defined using `Option[A]`. 
 This mostly happens when interoping with Java, but could also occur with any other JVM language.  The original reason this library was created was to simplify a large amount of
 code that dealt with extracting values out of highly nested [Avro](https://avro.apache.org/) data structures.
 
