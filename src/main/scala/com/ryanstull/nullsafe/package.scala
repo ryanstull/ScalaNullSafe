@@ -362,7 +362,7 @@ package object nullsafe {
 							isAnyRef(tree) && !isPackageOrModule(tree)
 						}
 
-						if (transformations.nonEmpty && (dontCheckForNotNull || !nullable(tree) || canFoldInto)) {
+						if (transformations.nonEmpty && (dontCheckForNotNull || (!nullable(tree) && canFoldInto))) {
 							val prev = transformations.head
 							transformations.update(0, transformation.andThen(prev))
 						} else {
@@ -381,7 +381,7 @@ package object nullsafe {
 						case t: Ident => (t, transformations)
 						case t@Select(qualifier, _) if isPackageOrModule(qualifier) => (t, transformations) //Selects from packages
 						case t@(_: Literal | _: This) => (incorporateBase(t, ignoreCanFold = true), transformations)
-						case t if t.symbol != null && t.symbol.isStatic => (incorporateBase(t), transformations) //Static methods call
+						case t if t.symbol != null && t.symbol.isStatic && !t.symbol.isImplicit => (incorporateBase(t), transformations) //Static methods call
 						case TypeApply(Select(qualifier, termName), types) => //Casting
 							val transformation = (qual: Tree) => TypeApply(Select(qual, termName), types)
 							incorporateTransformation(transformation, dontCheckForNotNull = true)
@@ -398,6 +398,10 @@ package object nullsafe {
 							(incorporateBase(apply), transformations)
 						case Apply(prefix@(_: This | _: Ident | Select(_: This | _: New, _)), List(arg)) => //Function with one arg
 							val transformation = (arg: Tree) => Apply(prefix, List(arg))
+							incorporateTransformation(transformation)
+							loop(arg, transformations, canFoldInto = true)
+						case t@Apply(s@Select(_, _), List(arg)) if t.symbol != null && t.symbol.isStatic && t.symbol.isImplicit => //Implicit def
+							val transformation = (qual: Tree) => Apply(s, List(qual))
 							incorporateTransformation(transformation)
 							loop(arg, transformations, canFoldInto = true)
 						case Apply(prefix@(_: This | _: Ident | Select(_: This | _: New, _)), args) => //Function with multiple args
