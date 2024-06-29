@@ -401,6 +401,14 @@ class Tests extends FlatSpec {
 		assert(o2.doubleOpt.isEmpty)
 		assert(o3.doubleOpt.isEmpty)
 	}
+
+	"isNull" should "work" in {
+		val a = A(B(C(null)))
+		val a2 = A(B(C(D(E("Test")))))
+
+		assert(isNull(a.b.c.d.e.s))
+		assert(!isNull(a2.b.c.d.e.s))
+	}
 }
 
 //Example of deeply nested domain object

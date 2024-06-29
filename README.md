@@ -27,7 +27,7 @@ Add the dependency:
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13)
 
 ```sbt
-libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.6" % "provided"
+libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.3.0" % "provided"
 ```
 <sub>* Since macros are only used at compile time, if your build tool has a way to specify compile-time-only dependencies, you can use that for this library</sub>
 
@@ -49,15 +49,17 @@ val a2 = A(B(C(D(E("Hello")))))
 ?(a2.b.c.d.e.s) //Returns "Hello"
 ```
 
-There's also a variant that returns an `Option[A]` when provided an expression of type `A`,
-and another that just checks if a property is defined.
+There's also a variant that returns an `Option[A]` when provided an expression of type `A`, 
+another that just checks if a property is defined, and it's inverse.
 
 ```scala
 opt(a.b.c.d.e.s) //Returns None
 notNull(a.b.c.d.e.s) //Returns false
+isNull(a.b.c.d.e.s) //Returns true
 
 opt(a2.b.c.d.e.s) //Returns Some("Hello")
 notNull(a2.b.c.d.e.s) //Returns true
+isNull(a2.b.c.d.e.s) //Returns false
 ```
 
 ## How it works
@@ -120,6 +122,19 @@ if(a != null){
     b.c != null
   } else false
 } else false
+```
+
+### `isNull` macro
+
+And the `isNull` macro, translating `isNull(a.b.c)` into:
+
+```scala
+if(a != null){
+  val b = a.b
+  if(b != null){
+    b.c == null
+  } else true
+} else true
 ```
 
 ### Safe translation

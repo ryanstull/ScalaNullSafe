@@ -255,10 +255,21 @@ package object nullsafe {
 		*
 		* @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
 		* @tparam A Type of the expression
-		* @return `true` if the value of the expression is not null and and there wouldn't have been any NullPointerExceptions
+		* @return `true` if the value of the expression is not null and there wouldn't have been any NullPointerExceptions
 		*         due to method/field access on `null`, false otherwise.
 		*/
 	def notNull[A](expr: A): Boolean = macro notNullImpl[A]
+
+	/**
+		* Translates an expression that could cause a NullPointerException due to method/field access on `null`
+		* and adds explicit null-checks to avoid that.
+		*
+		* @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+		* @tparam A Type of the expression
+		* @return `true` if the value of the expression is null or there would have been any NullPointerExceptions
+		*         due to method/field access on `null`, false otherwise.
+		*/
+	def isNull[A](expr: A): Boolean = macro isNullImpl[A]
 
 	def debugMaco[A](expr: A): A = macro debugMacoImpl[A]
 
@@ -332,6 +343,14 @@ package object nullsafe {
 
 			val tree = expr.tree
 			val result = rewriteToNullSafe(c)(tree)(q"false", checkLast = false, a => q"$a != null")
+			c.Expr[Boolean](result)
+		}
+
+		def isNullImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[Boolean] = {
+			import c.universe._
+
+			val tree = expr.tree
+			val result = rewriteToNullSafe(c)(tree)(q"true", checkLast = false, a => q"$a == null")
 			c.Expr[Boolean](result)
 		}
 
