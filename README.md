@@ -15,8 +15,8 @@ The purpose of this library is to provide a quick, easy, readable/writable, and 
 | For loop flatMap     	| ✔️         	| ⚠️                 	| ⛔         	|
 | Null-safe navigator  	| ✔️         	| ⚠️                 	| ⚠️         	|
 | Try-catch NPE        	| ✔️         	| ✔️                 	| ⚠️         	|
-| Monocle Optional (lenses)| ✔️         	| 💀	                  | ⛔         	|
 | thoughtworks NullSafe DSL| ✔️         	| ✔️	                  | ⚠️         	|
+| Monocle Optional (lenses)| ✔️         	| 💀	                  | 💀         	|
 
 Key: ✔️ = Good, ⚠️ = Sub-optimal, ⛔ = Bad, 💀 = Horrible
 
@@ -66,8 +66,8 @@ isNull(a2.b.c.d.e.s) //Returns false
 
 ### `?` macro
 
-The macro works by translating an expression, inserting null-checks before each intermediate result is used, turning
-`?(a.b.c)`, for example, into
+The macro works by transforming an expression at compile-time, inserting null-checks before each intermediate result is used; turning
+`?(a.b.c)`, for example, into:
 
 ```scala
 if(a != null){
@@ -78,7 +78,7 @@ if(a != null){
 } else null
 ```
 
-Or for a longer example, translating `?(a.b.c.d.e.s)` into:
+Or for a longer example, transforming `?(a.b.c.d.e.s)` into:
 
 ```scala
 if(a != null){
@@ -96,6 +96,19 @@ if(a != null){
     } else null
   } else null
 } else null
+```
+
+#### Custom default for `?`
+
+For the `?` macro, you can also provide a custom default instead of `null`, by passing it in as the second
+parameter.  For example:
+
+```scala
+case class Person(name: String)
+
+val person: Person = null
+
+assert(?(person.name,"Jeff") == "Jeff")
 ```
 
 ### `opt` macro
@@ -137,33 +150,6 @@ if(a != null){
 } else true
 ```
 
-### Safe translation
-
-All of the above work for method invocation as well as property access, and the two can be intermixed. For example: 
-
-`?(someObj.methodA().field1.twoArgMethod("test",1).otherField)`
- 
- will be translated properly.
- 
-Also the macro will make the arguments to method and function calls null-safe as well:
-
-`?(a.b.c.method(d.e.f))`
-
-So you don't have to worry if `d` or `e` would be null.
-
-### Custom default for `?`
-
-For the `?` macro, you can also provide a custom default instead of `null`, by passing it in as the second
-parameter.  For example
-
-```scala
-case class Person(name: String)
-
-val person: Person = null
-
-assert(?(person.name,"") == "")
-```
-
 ### `??` macro
 
 There's also a `??` ([null coalesce operator](https://en.wikipedia.org/wiki/Null_coalescing_operator)) which is used to select the first non-null value from a var-args list of expressions.
@@ -182,42 +168,82 @@ assert(??(person.name,person2.name,person3.name)("No name") == "Sally")
 ```
 
 The null-safe coalesce operator also rewrites each arg so that it's null safe.  So you can pass in `a.b.c` as an expression
-without worrying if `a` or `b` are `null`. To be more explicit, the `??` macro would translate `??(a.b.c,a2.b.c)(default)` into
+without worrying if `a` or `b` are `null`. 
+
+A simple but accurate way to think about how the `??` macro transforms its arguments would be like this:
 
 ```scala
 {
-    val v1 = if(a != null){
-      val b = a.b
-      if(b != null){
-        val c = b.c
-        if(c != null){
-          c
-        } else null
-      } else null
-    } else null
+    val v1 = ?(arg1)
     if(v1 != null) v1
     else {
-        val v2 = if(a2 != null){
-          val b = a2.b
-          if(b != null){
-            val c = b.c
-            if(c != null){
-              c
-            } else null
-          } else null
-        } else null
-        if (v2 != null) v2
-        else default
+        <next> or <default>
     }
 }
 ```
 
-Compared to the `?` macro in the case of a single arg, the `??` macro check that that _entire_ expression is not null. Whereas
+So in the example above we would have:
+
+```scala
+{
+    val v1 = ?(person.name)
+    if (v1 != null) v1
+    else {
+        val v2 = ?(person2.name)
+        if (v2 != null) v2
+        else {
+            val v3 = ?(person3.name)
+            if (v3 != null) v3
+            else default
+        }
+    }
+}
+```
+
+To be fully explicit, the `??` macro would transform the above example to:
+
+```scala
+{
+    val v1 = if(person!=null){
+        person.name
+    } else null
+    if(v1 != null) v1
+    else {
+        val v2 = if(person2!=null) {
+            person2.name
+        } else null
+        if (v2 != null) v2
+        else {
+            val v3 = if(person3!=null){
+                person3.name
+            } else null
+            if (v3 != null) v3
+            else "No name"
+        }
+    }
+}
+```
+
+Compared to the `?` macro, in the case of a single arg, the `??` macro checks that the _entire_ expression is not null; whereas
 the `?` macro would just check that the preceding elements (e.g. `a` and `b` in `a.b.c`) aren't null before returning the default value.
+
+### Safe translation
+
+All of the above work for method invocation as well as property access, and the two can be freely intermixed. For example:
+
+`?(someObj.methodA().field1.twoArgMethod("test",1).otherField)`
+
+will be translated properly.
+
+Also the macros will make the arguments to method and function calls null-safe as well:
+
+`?(a.b.c.method(d.e.f))`
+
+So you don't have to worry if `d` or `e` would be null.
 
 ### Efficient null-checks
 
-The macro is also smart about what it checks for null, so anything that is `<: AnyVal` will not be checked for null.  For example
+The macros are also smart about what they check for null; so any intermediate results that are `<: AnyVal` will not be checked for null.  For example:
 
 ```scala
 case class A(b: B)
@@ -295,7 +321,7 @@ Here's the result of running the included jmh benchmarks:
 ```
 
 You can find the source code for the JMH benchmarks [here](https://github.com/ryanstull/ScalaNullSafe/blob/ebc0ed592fa5997a9c7b868cf8cdcea590e8ae07/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L18).  If you want to run the benchmarks yourself, just run `sbt bench`, or `sbt quick-bench` for a shorter run. These benchmarks
-compare all of the known ways (or at least the ways that I know of) to handle null-safety in scala.
+compare all of the known ways (or at least the ways that I know of) to handle null-safe traversals in scala.
 
 The reason ScalaNullSafe performs the best is because there are no extraneous method calls, memory allocations, or exception handling, which all of the other solutions use.
 By leveraging the power of macros we are able to produce theoretically-optimal bytecode, whose performance is equivalent to the explicit null safety approach.
