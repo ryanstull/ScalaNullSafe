@@ -6,17 +6,17 @@ The purpose of this library is to provide a quick, easy, readable/writable, and 
 
 ### Quick comparison of null-safe implementations:
 
-| Implementation      	| Null-safe 	| Readable & Writable | Efficient 	|
-|----------------------	|-----------	|-------------------	|-----------	|
-| 🎉 **ScalaNullSafe** 🎉        	| ✔️         	| ✔️                 	| ✔️         	|
-| Normal access        	| ⛔         	| ✔️                 	| ✔️         	|
-| Explicit null-checks 	| ✔️         	| ⛔                 	| ✔️         	|
-| Option flatMap       	| ✔️         	| ⚠️                 	| ⛔         	|
-| For loop flatMap     	| ✔️         	| ⚠️                 	| ⛔         	|
-| Null-safe navigator  	| ✔️         	| ⚠️                 	| ⚠️         	|
-| Try-catch NPE        	| ✔️         	| ✔️                 	| ⚠️         	|
-| thoughtworks NullSafe DSL| ✔️         	| ✔️	                  | ⚠️         	|
-| Monocle Optional (lenses)| ✔️         	| 💀	                  | 💀         	|
+| Implementation      	                                                                                                                                                                             | Null-safe 	| Readable & Writable | Efficient 	|
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------	|-------------------	|-----------	|
+| 🎉 [**ScalaNullSafe**](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L132) 🎉        | ✔️         	| ✔️                 	| ✔️         	|
+| [Normal access](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L27)        	          | ⛔         	| ✔️                 	| ✔️         	|
+| [Explicit null-checks](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L30-L45) 	      | ✔️         	| ⛔                 	| ✔️         	|
+| [Option flatMap](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L74-L79)       	      | ✔️         	| ⚠️                 	| ⛔         	|
+| [For loop flatMap](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L82-L90)     	      | ✔️         	| ⚠️                 	| ⛔         	|
+| [Null-safe navigator](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L120-L123)  	    | ✔️         	| ⚠️                 	| ⚠️         	|
+| [Try-catch NPE](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L104-L109)        	    | ✔️         	| ✔️                 	| ⚠️         	|
+| [thoughtworks NullSafe DSL](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L169-L172) | ✔️         	| ✔️	                  | ⚠️         	|
+| [Monocle Optional (lenses)](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L139-L162) | ✔️         	| 💀	                  | 💀         	|
 
 Key: ✔️ = Good, ⚠️ = Sub-optimal, ⛔ = Bad, 💀 = Horrible
 
@@ -224,8 +224,25 @@ To be fully explicit, the `??` macro would transform the above example to:
 }
 ```
 
+### `??` compared to `?`
+
 Compared to the `?` macro, in the case of a single arg, the `??` macro checks that the _entire_ expression is not null; whereas
 the `?` macro would just check that the preceding elements (e.g. `a` and `b` in `a.b.c`) aren't null before returning the default value.
+
+For example consider the following example:
+
+```scala
+case class A(b: B)
+case class B(c: C)
+case class C(s: String)
+
+val a = A(B(C(null)))
+
+assert(?(a.b.c.s, "Default") == null)
+assert(??(a.b.c.s)("Default") == "Default")
+```
+
+For `?`, the default value only gets used if there would've been a `NullPointerException`.  So the return value of `?` could still be `null` even if you supply a default.
 
 ### Safe translation
 
