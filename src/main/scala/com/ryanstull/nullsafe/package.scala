@@ -404,7 +404,7 @@ package object nullsafe {
 						case TypeApply(Select(qualifier, termName), types) => //Casting
 							val transformation = (qual: Tree) => TypeApply(Select(qual, termName), types)
 							incorporateTransformation(transformation, dontCheckForNotNull = true)
-							loop(qualifier, transformations)
+							loop(qualifier, transformations, canFoldInto = true)
 						case Select(Apply(implicitClass, qualifier :: Nil), predName) if implicitClass.symbol.isImplicit => //Implicit class
 							val transformation = (qual: Tree) => Select(Apply(implicitClass,List(qual)), predName)
 							incorporateTransformation(transformation)
@@ -412,7 +412,7 @@ package object nullsafe {
 						case Select(qualifier, predName) => //Select
 							val transformation = (qual: Tree) => Select(qual, predName)
 							incorporateTransformation(transformation)
-							loop(qualifier, transformations)
+							loop(qualifier, transformations, canFoldInto = true)
 						case apply@Apply(_@(_: This | _: Ident | Select(_: This | _: New, _)), List(_: Literal)) => //Function with literal arg
 							(incorporateBase(apply), transformations)
 						case Apply(prefix@(_: This | _: Ident | Select(_: This | _: New, _)), List(arg)) => //Function with one arg
@@ -426,7 +426,11 @@ package object nullsafe {
 						case Apply(prefix@(_: This | _: Ident | Select(_: This | _: New, _)), args) => //Function with multiple args
 							val applyWithSafeArgs = Apply(prefix, rewriteArgsToNullSafe(args))
 							(incorporateBase(applyWithSafeArgs), transformations)
-						case Apply(Select(qualifier, predicate), List(arg)) => //Method with one arg
+						case Apply(Select(qualifier, predicate), Nil) => //Method with zero arg
+							val transformation = (qual: Tree) => Apply(Select(qual, predicate), Nil)
+							incorporateTransformation(transformation)
+							loop(qualifier, transformations, canFoldInto = true)
+						case Apply(Select(qualifier, predicate), List(arg))  => //Method with one arg
 							val transformation = (qual: Tree) => Apply(Select(qual, predicate), List(rewriteToNullSafe(c)(arg)(q"null", checkLast = false, a => a)))
 							incorporateTransformation(transformation)
 							loop(qualifier, transformations, canFoldInto = true)
