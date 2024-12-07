@@ -27,7 +27,7 @@ Add the dependency:
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13)
 
 ```sbt
-libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.3.0" % "provided"
+libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.3.1" % "provided"
 ```
 <sub>* Since macros are only used at compile time, if your build tool has a way to specify compile-time-only dependencies, you can use that for this library</sub>
 
