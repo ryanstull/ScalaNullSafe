@@ -1,10 +1,10 @@
-
-lazy val scala213 = "2.13.0"
-lazy val scala212 = "2.12.8"
 lazy val scala211 = "2.11.12"
-lazy val supportedScalaVersions = List(scala211, scala212, scala213)
+lazy val scala212 = "2.12.8"
+lazy val scala213 = "2.13.12"
+lazy val scala3 = "3.3.1"
+lazy val supportedScalaVersions = List(scala211, scala212, scala213, scala3)
 
-ThisBuild / scalaVersion := scala213
+ThisBuild / scalaVersion := scala3
 
 inThisBuild(List(
 	organization := "com.ryanstull",
@@ -24,10 +24,29 @@ lazy val root = (project in file("."))
 	.settings(
 		name := "ScalaNullSafe",
 		crossScalaVersions := supportedScalaVersions,
+		Compile / unmanagedSourceDirectories += {
+			val sourceDir = (Compile / sourceDirectory).value
+			CrossVersion.partialVersion(scalaVersion.value) match {
+				case Some((2, _)) => sourceDir / "scala-2"
+				case Some((3, _)) => sourceDir / "scala-3"
+				case _ => sourceDir / "scala-2.13"
+			}
+		},
+		libraryDependencies ++= {
+			CrossVersion.partialVersion(scalaVersion.value) match {
+				case Some((2, _)) => Seq(
+					"org.scala-lang" % "scala-reflect" % scalaVersion.value
+				)
+				case Some((3, _)) => Seq(
+					"org.scala-lang" %% "scala3-staging" % scalaVersion.value
+				)
+				case _ => Nil
+			}
+		},
 		libraryDependencies ++= Seq(
-			"org.scala-lang" % "scala-reflect" % scalaVersion.value,
-			"org.scalactic" %% "scalactic" % "3.0.8" % "test",
-			"org.scalatest" %% "scalatest" % "3.0.8" % "test",
+			"org.scalatest" %% "scalatest" % "3.2.15" % Test,
+			"org.scalatest" %% "scalatest-flatspec" % "3.2.15" % Test,
+			"org.scalactic" %% "scalactic" % "3.2.15" % Test
 		)
 	)
 
