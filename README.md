@@ -1,22 +1,22 @@
 # ScalaNullSafe
 
-The purpose of this macro is to provide a quick, easy, readable/writable, and efficient way to make code null-safe in scala.
+The purpose of this library is to provide a quick, easy, readable/writable, and efficient way to do null-safe traversals in Scala.
 
 [![Scala CI](https://github.com/ryanstull/ScalaNullSafe/actions/workflows/test.yml/badge.svg)](https://github.com/ryanstull/ScalaNullSafe/actions/workflows/test.yml)
 
 ### Quick comparison of null-safe implementations:
 
-| Implementation      	| Null-safe 	| Readable & Writable | Efficient 	|
-|----------------------	|-----------	|-------------------	|-----------	|
-| 🎉 **ScalaNullSafe** 🎉        	| ✔️         	| ✔️                 	| ✔️         	|
-| Normal access        	| ⛔         	| ✔️                 	| ✔️         	|
-| Explicit null-checks 	| ✔️         	| ⛔                 	| ✔️         	|
-| Option flatMap       	| ✔️         	| ⚠️                 	| ⛔         	|
-| For loop flatMap     	| ✔️         	| ⚠️                 	| ⛔         	|
-| Null-safe navigator  	| ✔️         	| ⚠️                 	| ⚠️         	|
-| Try-catch NPE        	| ✔️         	| ✔️                 	| ⚠️         	|
-| Monocle Optional (lenses)| ✔️         	| 💀	                  | ⛔         	|
-| thoughtworks NullSafe DSL| ✔️         	| ✔️	                  | ⚠️         	|
+| Implementation      	                                                                                                                                                                             | Null-safe 	| Readable & Writable | Efficient 	|
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------	|-------------------	|-----------	|
+| 🎉 [**ScalaNullSafe**](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L132) 🎉        | ✔️         	| ✔️                 	| ✔️         	|
+| [Normal access](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L27)        	          | ⛔         	| ✔️                 	| ✔️         	|
+| [Explicit null-checks](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L30-L45) 	      | ✔️         	| ⛔                 	| ✔️         	|
+| [Option flatMap](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L74-L79)       	      | ✔️         	| ⚠️                 	| ⛔         	|
+| [For loop flatMap](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L82-L90)     	      | ✔️         	| ⚠️                 	| ⛔         	|
+| [Null-safe navigator](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L120-L123)  	    | ✔️         	| ⚠️                 	| ⚠️         	|
+| [Try-catch NPE](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L104-L109)        	    | ✔️         	| ✔️                 	| ⚠️         	|
+| [thoughtworks NullSafe DSL](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L169-L172) | ✔️         	| ✔️	                  | ⚠️         	|
+| [Monocle Optional (lenses)](https://github.com/ryanstull/ScalaNullSafe/blob/e596852bd54fd3848bc9fa91bdee33f4024afde1/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L139-L162) | ✔️         	| 💀	                  | 💀         	|
 
 Key: ✔️ = Good, ⚠️ = Sub-optimal, ⛔ = Bad, 💀 = Horrible
 
@@ -27,7 +27,7 @@ Add the dependency:
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13)
 
 ```sbt
-libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.2.6"
+libraryDependencies += "com.ryanstull" %% "scalanullsafe" % "1.3.1" % "provided"
 ```
 <sub>* Since macros are only used at compile time, if your build tool has a way to specify compile-time-only dependencies, you can use that for this library</sub>
 
@@ -49,23 +49,25 @@ val a2 = A(B(C(D(E("Hello")))))
 ?(a2.b.c.d.e.s) //Returns "Hello"
 ```
 
-There's also a variant that returns an `Option[A]` when provided an expression of type `A`,
-and another that just checks if a property is defined.
+There's also a variant that returns an `Option[A]` when provided an expression of type `A`, 
+another that just checks if a property is defined, and it's inverse.
 
 ```scala
 opt(a.b.c.d.e.s) //Returns None
 notNull(a.b.c.d.e.s) //Returns false
+isNull(a.b.c.d.e.s) //Returns true
 
 opt(a2.b.c.d.e.s) //Returns Some("Hello")
 notNull(a2.b.c.d.e.s) //Returns true
+isNull(a2.b.c.d.e.s) //Returns false
 ```
 
 ## How it works
 
 ### `?` macro
 
-The macro works by translating an expression, inserting null-checks before each intermediate result is used, turning
-`?(a.b.c)`, for example, into
+The macro works by transforming an expression at compile-time, inserting null-checks before each intermediate result is used; turning
+`?(a.b.c)`, for example, into:
 
 ```scala
 if(a != null){
@@ -76,7 +78,7 @@ if(a != null){
 } else null
 ```
 
-Or for a longer example, translating `?(a.b.c.d.e.s)` into:
+Or for a longer example, transforming `?(a.b.c.d.e.s)` into:
 
 ```scala
 if(a != null){
@@ -94,6 +96,19 @@ if(a != null){
     } else null
   } else null
 } else null
+```
+
+#### Custom default for `?`
+
+For the `?` macro, you can also provide a custom default instead of `null`, by passing it in as the second
+parameter.  For example:
+
+```scala
+case class Person(name: String)
+
+val person: Person = null
+
+assert(?(person.name,"Jeff") == "Jeff")
 ```
 
 ### `opt` macro
@@ -122,31 +137,17 @@ if(a != null){
 } else false
 ```
 
-### Safe translation
+### `isNull` macro
 
-All of the above work for method invocation as well as property access, and the two can be intermixed. For example: 
-
-`?(someObj.methodA().field1.twoArgMethod("test",1).otherField)`
- 
- will be translated properly.
- 
-Also the macro will make the arguments to method and function calls null-safe as well:
-
-`?(a.b.c.method(d.e.f))`
-
-So you don't have to worry if `d` or `e` would be null.
-
-### Custom default for `?`
-
-For the `?` macro, you can also provide a custom default instead of `null`, by passing it in as the second
-parameter.  For example
+And the `isNull` macro, translating `isNull(a.b.c)` into:
 
 ```scala
-case class Person(name: String)
-
-val person: Person = null
-
-assert(?(person.name,"") == "")
+if(a != null){
+  val b = a.b
+  if(b != null){
+    b.c == null
+  } else true
+} else true
 ```
 
 ### `??` macro
@@ -167,42 +168,99 @@ assert(??(person.name,person2.name,person3.name)("No name") == "Sally")
 ```
 
 The null-safe coalesce operator also rewrites each arg so that it's null safe.  So you can pass in `a.b.c` as an expression
-without worrying if `a` or `b` are `null`. To be more explicit, the `??` macro would translate `??(a.b.c,a2.b.c)(default)` into
+without worrying if `a` or `b` are `null`. 
+
+A simple but accurate way to think about how the `??` macro transforms its arguments would be like this:
 
 ```scala
 {
-    val v1 = if(a != null){
-      val b = a.b
-      if(b != null){
-        val c = b.c
-        if(c != null){
-          c
-        } else null
-      } else null
-    } else null
+    val v1 = ?(arg1)
     if(v1 != null) v1
     else {
-        val v2 = if(a2 != null){
-          val b = a2.b
-          if(b != null){
-            val c = b.c
-            if(c != null){
-              c
-            } else null
-          } else null
-        } else null
-        if (v2 != null) v2
-        else default
+        <next> or <default>
     }
 }
 ```
 
-Compared to the `?` macro in the case of a single arg, the `??` macro check that that _entire_ expression is not null. Whereas
+So in the example above we would have:
+
+```scala
+{
+    val v1 = ?(person.name)
+    if (v1 != null) v1
+    else {
+        val v2 = ?(person2.name)
+        if (v2 != null) v2
+        else {
+            val v3 = ?(person3.name)
+            if (v3 != null) v3
+            else default
+        }
+    }
+}
+```
+
+To be fully explicit, the `??` macro would transform the above example to:
+
+```scala
+{
+    val v1 = if(person!=null){
+        person.name
+    } else null
+    if(v1 != null) v1
+    else {
+        val v2 = if(person2!=null) {
+            person2.name
+        } else null
+        if (v2 != null) v2
+        else {
+            val v3 = if(person3!=null){
+                person3.name
+            } else null
+            if (v3 != null) v3
+            else "No name"
+        }
+    }
+}
+```
+
+### `??` compared to `?`
+
+Compared to the `?` macro, in the case of a single arg, the `??` macro checks that the _entire_ expression is not null; whereas
 the `?` macro would just check that the preceding elements (e.g. `a` and `b` in `a.b.c`) aren't null before returning the default value.
+
+For example consider the following example:
+
+```scala
+case class A(b: B)
+case class B(c: C)
+case class C(s: String)
+
+val a = A(B(C(null)))
+
+assert(?(a.b.c.s, "Default") == null)
+assert(??(a.b.c.s)("Default") == "Default")
+```
+
+For `?`, the default value only gets used if there would've been a `NullPointerException`.  So the return value of `?` could still be `null` even if you supply a default.
+
+### Safe translation
+
+All of the above work for method invocation as well as property access, and the two can be freely intermixed. For example:
+
+`?(someObj.methodA().field1.twoArgMethod("test",1).otherField)`
+
+will be translated properly.
+
+Also the macros will make the arguments to method and function calls null-safe as well:
+
+`?(a.b.c.method(d.e.f))`
+
+So you don't have to worry if `d` or `e` would be null.
 
 ### Efficient null-checks
 
-The macro is also smart about what it checks for null, so anything that is `<: AnyVal` will not be checked for null.  For example
+The macros are also smart about what they check for null; so any intermediate results that are `<: AnyVal` will not be checked for null.  For example:
 
 ```scala
 case class A(b: B)
@@ -279,11 +337,18 @@ Here's the result of running the included jmh benchmarks:
 [success] Total time: 3909 s, completed Feb 24, 2019 3:03:02 PM
 ```
 
-You can find the source code for the JMH benchmarks [here](https://github.com/ryanstull/ScalaNullSafe/blob/ebc0ed592fa5997a9c7b868cf8cdcea590e8ae07/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L18).  If you want to run the benchmarks yourself, just run `sbt bench`, or `sbt quick-bench` for a shorter run.
+You can find the source code for the JMH benchmarks [here](https://github.com/ryanstull/ScalaNullSafe/blob/ebc0ed592fa5997a9c7b868cf8cdcea590e8ae07/benchmarks/src/test/scala/com/ryanstull/nullsafe/Benchmarks.scala#L18).  If you want to run the benchmarks yourself, just run `sbt bench`, or `sbt quick-bench` for a shorter run. These benchmarks
+compare all of the known ways (or at least the ways that I know of) to handle null-safe traversals in scala.
 
-These benchmarks compare all of the known ways (or at least the ways that I know of) to handle null-safety in scala.  It demonstrates 
-that the explicit null-safety is the highest performing and that the 'ScalaNullSafe' macro has 
-equivalent performance.
+The reason ScalaNullSafe performs the best is because there are no extraneous method calls, memory allocations, or exception handling, which all of the other solutions use.
+By leveraging the power of macros we are able to produce theoretically-optimal bytecode, whose performance is equivalent to the explicit null safety approach.
+
+## Why?
+
+Some people have questioned the reason for this library's existence since, in Scala, the idiomatic way to handle potentially absent values is to use `Option[A]`. 
+The reason this library is needed is that there are situations where you need to extract deeply nested data, in a null-safe way, that was not defined using `Option[A]`. 
+This mostly happens when interoping with Java, but could also occur with any other JVM language.  The original reason this library was created was to simplify a large amount of
+code that dealt with extracting values out of highly nested [Avro](https://avro.apache.org/) data structures.
 
 ## Notes
 

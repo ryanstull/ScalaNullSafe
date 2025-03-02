@@ -382,6 +382,33 @@ class Tests extends FlatSpec {
 		val a: A = A(B(C(D(E(null)))))
 		?(a.b.c.getD.e.s.toInt)
 	}
+
+	"Handling implicit defs" should "work" in {
+		import java.{lang => jl}
+		case class Input(double: jl.Double)
+		case class Output(doubleOpt: Option[Double])
+
+		val i1 = Input(3d)
+		val o1 = Output(opt(i1.double))
+
+		val i2 = Input(null)
+		val o2 = Output(opt(i2.double))
+
+		val i3: Input = null
+		val o3 = Output(opt(i3.double))
+
+		assert(o1.doubleOpt.contains(3d))
+		assert(o2.doubleOpt.isEmpty)
+		assert(o3.doubleOpt.isEmpty)
+	}
+
+	"isNull" should "work" in {
+		val a = A(B(C(null)))
+		val a2 = A(B(C(D(E("Test")))))
+
+		assert(isNull(a.b.c.d.e.s))
+		assert(!isNull(a2.b.c.d.e.s))
+	}
 }
 
 //Example of deeply nested domain object

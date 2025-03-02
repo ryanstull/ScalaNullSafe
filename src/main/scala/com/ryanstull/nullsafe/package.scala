@@ -255,10 +255,21 @@ package object nullsafe {
 		*
 		* @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
 		* @tparam A Type of the expression
-		* @return `true` if the value of the expression is not null and and there wouldn't have been any NullPointerExceptions
+		* @return `true` if the value of the expression is not null and there wouldn't have been any NullPointerExceptions
 		*         due to method/field access on `null`, false otherwise.
 		*/
 	def notNull[A](expr: A): Boolean = macro notNullImpl[A]
+
+	/**
+		* Translates an expression that could cause a NullPointerException due to method/field access on `null`
+		* and adds explicit null-checks to avoid that.
+		*
+		* @param expr Some expression that might cause a NullPointerExpression due to method/field access on `null`
+		* @tparam A Type of the expression
+		* @return `true` if the value of the expression is null or there would have been any NullPointerExceptions
+		*         due to method/field access on `null`, false otherwise.
+		*/
+	def isNull[A](expr: A): Boolean = macro isNullImpl[A]
 
 	def debugMaco[A](expr: A): A = macro debugMacoImpl[A]
 
@@ -335,6 +346,14 @@ package object nullsafe {
 			c.Expr[Boolean](result)
 		}
 
+		def isNullImpl[A: c.WeakTypeTag](c: blackbox.Context)(expr: c.Expr[A]): c.Expr[Boolean] = {
+			import c.universe._
+
+			val tree = expr.tree
+			val result = rewriteToNullSafe(c)(tree)(q"true", checkLast = false, a => q"$a == null")
+			c.Expr[Boolean](result)
+		}
+
 		private def rewriteToNullSafe[A: c.WeakTypeTag](c: blackbox.Context)(tree: c.universe.Tree)
 																									 (default: c.universe.Tree, checkLast: Boolean = false, finalTransform: c.universe.Tree => c.universe.Tree): c.universe.Tree = {
 			import c.universe._
@@ -362,7 +381,7 @@ package object nullsafe {
 							isAnyRef(tree) && !isPackageOrModule(tree)
 						}
 
-						if (transformations.nonEmpty && (dontCheckForNotNull || !nullable(tree) || canFoldInto)) {
+						if (transformations.nonEmpty && (dontCheckForNotNull || (!nullable(tree) && canFoldInto))) {
 							val prev = transformations.head
 							transformations.update(0, transformation.andThen(prev))
 						} else {
@@ -381,11 +400,11 @@ package object nullsafe {
 						case t: Ident => (t, transformations)
 						case t@Select(qualifier, _) if isPackageOrModule(qualifier) => (t, transformations) //Selects from packages
 						case t@(_: Literal | _: This) => (incorporateBase(t, ignoreCanFold = true), transformations)
-						case t if t.symbol != null && t.symbol.isStatic => (incorporateBase(t), transformations) //Static methods call
+						case t if t.symbol != null && t.symbol.isStatic && !t.symbol.isImplicit => (incorporateBase(t), transformations) //Static methods call
 						case TypeApply(Select(qualifier, termName), types) => //Casting
 							val transformation = (qual: Tree) => TypeApply(Select(qual, termName), types)
 							incorporateTransformation(transformation, dontCheckForNotNull = true)
-							loop(qualifier, transformations)
+							loop(qualifier, transformations, canFoldInto = true)
 						case Select(Apply(implicitClass, qualifier :: Nil), predName) if implicitClass.symbol.isImplicit => //Implicit class
 							val transformation = (qual: Tree) => Select(Apply(implicitClass,List(qual)), predName)
 							incorporateTransformation(transformation)
@@ -393,17 +412,25 @@ package object nullsafe {
 						case Select(qualifier, predName) => //Select
 							val transformation = (qual: Tree) => Select(qual, predName)
 							incorporateTransformation(transformation)
-							loop(qualifier, transformations)
+							loop(qualifier, transformations, canFoldInto = true)
 						case apply@Apply(_@(_: This | _: Ident | Select(_: This | _: New, _)), List(_: Literal)) => //Function with literal arg
 							(incorporateBase(apply), transformations)
 						case Apply(prefix@(_: This | _: Ident | Select(_: This | _: New, _)), List(arg)) => //Function with one arg
 							val transformation = (arg: Tree) => Apply(prefix, List(arg))
 							incorporateTransformation(transformation)
 							loop(arg, transformations, canFoldInto = true)
+						case t@Apply(s@Select(_, _), List(arg)) if t.symbol != null && t.symbol.isStatic && t.symbol.isImplicit => //Implicit def
+							val transformation = (qual: Tree) => Apply(s, List(qual))
+							incorporateTransformation(transformation)
+							loop(arg, transformations, canFoldInto = true)
 						case Apply(prefix@(_: This | _: Ident | Select(_: This | _: New, _)), args) => //Function with multiple args
 							val applyWithSafeArgs = Apply(prefix, rewriteArgsToNullSafe(args))
 							(incorporateBase(applyWithSafeArgs), transformations)
-						case Apply(Select(qualifier, predicate), List(arg)) => //Method with one arg
+						case Apply(Select(qualifier, predicate), Nil) => //Method with zero arg
+							val transformation = (qual: Tree) => Apply(Select(qual, predicate), Nil)
+							incorporateTransformation(transformation)
+							loop(qualifier, transformations, canFoldInto = true)
+						case Apply(Select(qualifier, predicate), List(arg))  => //Method with one arg
 							val transformation = (qual: Tree) => Apply(Select(qual, predicate), List(rewriteToNullSafe(c)(arg)(q"null", checkLast = false, a => a)))
 							incorporateTransformation(transformation)
 							loop(qualifier, transformations, canFoldInto = true)
