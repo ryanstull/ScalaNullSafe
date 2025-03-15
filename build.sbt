@@ -58,8 +58,6 @@ lazy val root = (project in file("."))
 addCommandAlias("bench", "benchmarks/jmh:run -wi 20 -i 20")
 addCommandAlias("quick-bench", "benchmarks/jmh:run -wi 3 -i 2")
 
-val monocleVersion = "1.6.0-RC1"
-
 lazy val benchmarks = (project in file("benchmarks"))
 	.settings(
 		name := "benchmarks",
