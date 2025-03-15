@@ -1,6 +1,6 @@
 package com.ryanstull.nullsafe
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.language.implicitConversions
 
@@ -8,7 +8,7 @@ import scala.language.implicitConversions
 	* @author ryan
 	* @since 12/5/18.
 	*/
-class Tests extends FlatSpec {
+class Tests extends AnyFlatSpec {
 
 	import Tests._
 
