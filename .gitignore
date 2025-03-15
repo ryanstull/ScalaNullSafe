@@ -3,3 +3,7 @@ target
 .idea
 *.pptx
 .bsp
+.bloop
+.vscode
+.metals
+metals.sbt
