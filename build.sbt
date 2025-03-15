@@ -6,6 +6,18 @@ lazy val supportedScalaVersions = List(scala211, scala212, scala213, scala3)
 
 ThisBuild / scalaVersion := scala3
 
+ThisBuild / version := {
+	import scala.sys.process.*
+	val tag = "git tag --points-at HEAD".!!.trim
+
+	if (tag != "") tag
+	else {
+		val branch = "git rev-parse --abbrev-ref HEAD".!!.trim
+		val commitHash = "git rev-parse --short HEAD".!!.trim
+		s"$branch-$commitHash"
+	}
+}
+
 inThisBuild(List(
 	organization := "com.ryanstull",
 	homepage := Some(url("https://github.com/ryanstull/ScalaNullSafe")),
@@ -55,7 +67,7 @@ lazy val root = (project in file("."))
 		},
 	)
 
-addCommandAlias("bench", "benchmarks/jmh:run -wi 20 -i 20")
+addCommandAlias("bench", "benchmarks/jmh:run -wi 20")
 addCommandAlias("quick-bench", "benchmarks/jmh:run -wi 3 -i 2")
 
 lazy val benchmarks = (project in file("benchmarks"))

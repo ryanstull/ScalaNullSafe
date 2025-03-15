@@ -21,7 +21,7 @@ class Benchmarks {
 
 	val a: A = A(B(C(D(E("test")))))
 	val aWithNull: A = A(B(null))
-	val nul: Null = null //Refer to this null to prevent constant folding
+	val `null`: Null = null //Refer to this null to prevent constant folding
 
 	@Benchmark
 	def fastButUnsafe: String = a.b.c.d.e.s
@@ -113,7 +113,7 @@ class Benchmarks {
 		try {
 			aWithNull.b.c.d.e.s
 		} catch {
-			case _: NullPointerException => nul
+			case _: NullPointerException => `null`
 		}
 
 	@Benchmark

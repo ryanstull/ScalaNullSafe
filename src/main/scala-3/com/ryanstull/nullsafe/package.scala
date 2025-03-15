@@ -306,7 +306,9 @@ package object nullsafe:
               incorporateTransformation(transformation)
               loop(qualifier, transformations)
             case _ =>
-              report.error(s"Unsupported term type: ${term.getClass.getName} in ${term.show(using Printer.TreeStructure)}")
+              report.error(
+                s"""Unsupported term type: ${term.getClass.getName} in ${term.show(using Printer.TreeStructure)}
+                   |If you believe this is something that should be supported, please submit an issue at: https://github.com/ryanstull/ScalaNullSafe/issues""".stripMargin)
               (term, ListBuffer.empty)
         }
 
