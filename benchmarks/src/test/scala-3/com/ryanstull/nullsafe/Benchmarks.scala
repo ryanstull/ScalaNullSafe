@@ -1,8 +1,8 @@
 package com.ryanstull.nullsafe
 
-import java.util.concurrent.TimeUnit
-
 import org.openjdk.jmh.annotations._
+
+import java.util.concurrent.TimeUnit
 
 /**
   * @author ryan
@@ -163,17 +163,4 @@ class Benchmarks {
 
 	@Benchmark
 	def monocleOptionalAbsent: Option[String] = aGetS.getOption(aWithNull)
-
-
-	@Benchmark
-	def nullSafeDslPresent: String = {
-		import com.thoughtworks.dsl.keywords.NullSafe._
-		a.?.b.?.c.?.d.?.e.?.s
-	}
-
-	@Benchmark
-	def nullSafeDslAbsent: String = {
-		import com.thoughtworks.dsl.keywords.NullSafe._
-		aWithNull.?.b.?.c.?.d.?.e.?.s
-	}
 }

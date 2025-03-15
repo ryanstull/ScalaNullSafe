@@ -1,7 +1,7 @@
 lazy val scala211 = "2.11.12"
 lazy val scala212 = "2.12.8"
 lazy val scala213 = "2.13.12"
-lazy val scala3 = "3.1.3"
+lazy val scala3 = "3.3.5"
 lazy val supportedScalaVersions = List(scala211, scala212, scala213, scala3)
 
 ThisBuild / scalaVersion := scala3
@@ -29,7 +29,6 @@ lazy val root = (project in file("."))
 			CrossVersion.partialVersion(scalaVersion.value) match {
 				case Some((2, _)) => sourceDir / "scala-2"
 				case Some((3, _)) => sourceDir / "scala-3"
-				case _ => sourceDir / "scala-2.13"
 			}
 		},
 		Test / unmanagedSourceDirectories += {
@@ -37,9 +36,13 @@ lazy val root = (project in file("."))
 			CrossVersion.partialVersion(scalaVersion.value) match {
 				case Some((2, _)) => sourceDir / "scala-2"
 				case Some((3, _)) => sourceDir / "scala-3"
-				case _ => sourceDir / "scala-2.13"
 			}
 		},
+		libraryDependencies ++= Seq(
+			"org.scalatest" %% "scalatest" % "3.2.19" % Test,
+			"org.scalatest" %% "scalatest-flatspec" % "3.2.19" % Test,
+			"org.scalactic" %% "scalactic" % "3.2.19" % Test
+		),
 		libraryDependencies ++= {
 			CrossVersion.partialVersion(scalaVersion.value) match {
 				case Some((2, _)) => Seq(
@@ -48,17 +51,11 @@ lazy val root = (project in file("."))
 				case Some((3, _)) => Seq(
 					"org.scala-lang" %% "scala3-staging" % scalaVersion.value
 				)
-				case _ => Nil
 			}
 		},
-		libraryDependencies ++= Seq(
-			"org.scalatest" %% "scalatest" % "3.2.19" % Test,
-			"org.scalatest" %% "scalatest-flatspec" % "3.2.19" % Test,
-			"org.scalactic" %% "scalactic" % "3.2.19" % Test
-		)
 	)
 
-addCommandAlias("bench", "benchmarks/jmh:run")
+addCommandAlias("bench", "benchmarks/jmh:run -wi 20 -i 20")
 addCommandAlias("quick-bench", "benchmarks/jmh:run -wi 3 -i 2")
 
 val monocleVersion = "1.6.0-RC1"
@@ -67,6 +64,13 @@ lazy val benchmarks = (project in file("benchmarks"))
 	.settings(
 		name := "benchmarks",
 		crossScalaVersions := supportedScalaVersions,
+		Test / unmanagedSourceDirectories += {
+			val sourceDir = (Test / sourceDirectory).value
+			CrossVersion.partialVersion(scalaVersion.value) match {
+				case Some((2, _)) => sourceDir / "scala-2"
+				case Some((3, _)) => sourceDir / "scala-3"
+			}
+		},
 		sourceDirectory in Jmh := (sourceDirectory in Test).value,
 		classDirectory in Jmh := (classDirectory in Test).value,
 		dependencyClasspath in Jmh := (dependencyClasspath in Test).value,
@@ -74,12 +78,19 @@ lazy val benchmarks = (project in file("benchmarks"))
 		run in Jmh := (run in Jmh).dependsOn(Keys.compile in Jmh).evaluated,
 		skip in publish := true,
 		libraryDependencies ++= Seq(
-			"com.github.julien-truffaut" %% "monocle-core" % monocleVersion % "test",
-			"com.github.julien-truffaut" %% "monocle-macro" % monocleVersion % "test",
-			"com.thoughtworks.dsl" %% "keywords-nullsafe" % "1.5.5"
+			"dev.optics" %% "monocle-core" % "3.3.0" % "test",
+			"dev.optics" %% "monocle-macro" % "3.3.0" % "test",
 		),
-		addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "1.5.5"),
-		addCompilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-reseteverywhere" % "1.5.5")
+		libraryDependencies ++= {
+			CrossVersion.partialVersion(scalaVersion.value) match {
+				case Some((2, _)) => Seq(
+					"com.thoughtworks.dsl" %% "keywords-nullsafe" % "1.5.5",
+					compilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-bangnotation" % "1.5.5"),
+					compilerPlugin("com.thoughtworks.dsl" %% "compilerplugins-reseteverywhere" % "1.5.5")
+				)
+				case _ => Nil
+			}
+		}
 	).dependsOn(root % "test->test").enablePlugins(JmhPlugin)
 
 updateOptions := updateOptions.value.withGigahorse(false)
