@@ -11,14 +11,15 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 11
-    - uses: coursier/setup-action@v1
-      with:
-        jvm: temurin:11
-        apps: sbt
-    - name: Run tests
-      run: sbt +test
+      - uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 0
+      - uses: coursier/setup-action@v1
+        with:
+          jvm: temurin:11
+          apps: sbt
+      - name: Run tests
+        run: sbt +test
