@@ -24,7 +24,7 @@ Key: ✔️ = Good, ⚠️ = Sub-optimal, ⛔ = Bad, 💀 = Horrible
 
 Add the dependency:
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_2.13)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_3/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ryanstull/scalanullsafe_3)
 [![Scala version support](https://index.scala-lang.org/ryanstull/scalanullsafe/scalanullsafe/latest-by-scala-version.svg?platform=jvm)](https://index.scala-lang.org/ryanstull/scalanullsafe/scalanullsafe/latest-by-scala-version.svg?platform=jvm)
 
 ```sbt
