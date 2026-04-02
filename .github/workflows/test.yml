@@ -11,13 +11,13 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: coursier/setup-action@v1
+      - uses: coursier/setup-action@v3
         with:
           jvm: temurin:11
           apps: sbt
