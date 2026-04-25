@@ -348,8 +348,9 @@ By leveraging the power of macros we are able to produce theoretically-optimal b
 
 Some people have questioned the reason for this library's existence since, in Scala, the idiomatic way to handle potentially absent values is to use `Option[A]`. 
 The reason this library is needed is that there are situations where you need to extract deeply nested data, in a null-safe way, that was not defined using `Option[A]`. 
-This mostly happens when interoping with Java, but could also occur with any other JVM language.  The original reason this library was created was to simplify a large amount of
-code that dealt with extracting values out of highly nested [Avro](https://avro.apache.org/) data structures.
+This mostly happens when interoping with Java, but could also occur with any other JVM language.  
+
+The original reason this library was created was to simplify a large amount of code that dealt with extracting values out of highly nested [Avro](https://avro.apache.org/) data structures in [Spark](https://spark.apache.org/) jobs.  Large scale data processing jobs, that need to extract many fields from highly nested data structures, are where this library really shines because it can significantly reduce unnecessary object allocations, thus alleviating pressure on the GC and boosting overall throughput.
 
 ## Notes
 
