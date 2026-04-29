@@ -3,6 +3,7 @@
 The purpose of this library is to provide a quick, easy, readable/writable, and efficient way to do null-safe traversals in Scala.
 
 [![Scala CI](https://github.com/ryanstull/ScalaNullSafe/actions/workflows/test.yml/badge.svg)](https://github.com/ryanstull/ScalaNullSafe/actions/workflows/test.yml)
+<img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=52d5039e-8601-44a3-8d77-19609d6c580d" />
 
 ### Quick comparison of null-safe implementations:
 
